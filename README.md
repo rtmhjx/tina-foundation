@@ -8,6 +8,8 @@
 
 > 展示页：<https://rtmhjx.github.io/tina-foundation/> · 仓库：<https://github.com/rtmhjx/tina-foundation>
 
+> **Windows 预览。** Windows 10/11 的 PowerShell 安装、启动与计划任务脚本在 `windows` 分支；尚未完成端到端验收，请先读 [`docs/WINDOWS.md`](docs/WINDOWS.md)。
+
 ```
 Cordis / DSH 原生循环  ─┐
 Cortico Bot / World    ─┼─►  Tina Fusion Host  ─►  Web / Mobile / TTS / 硬件世界
@@ -27,6 +29,14 @@ Cortico Bot / World    ─┼─►  Tina Fusion Host  ─►  Web / Mobile / TT
 | **Ops** | `ops/` | 被动采集与原生会话归档，不重放模型请求、不伪造未发生的动作。 |
 | **Vendor** | `vendor/` | 离线依赖 tarball 与来源锁，保证无网环境可复现安装。 |
 
+## 三个可下载件
+
+| 件 | 是什么 | 入口 |
+| --- | --- | --- |
+| **Foundation** | 完整融合宿主：Cortico + DSH + Self-Mem + Worlds | 当前仓库 |
+| **Self-Mem** | 连续记忆引擎，可单独接 MCP / HTTP / Cortico Bot | [包说明](docs/SELF_MEM.md) · [冰山模型](docs/ICEBERG.md) · [Releases](https://github.com/rtmhjx/tina-foundation/releases) |
+| **DSH Host Plugin** | 把 Cortico Worlds 挂到已有 DSH 会话，不自带第二套运行时 | [包说明](docs/HOST_PLUGIN.md) · [Releases](https://github.com/rtmhjx/tina-foundation/releases) |
+
 ## 设计要点
 
 - **单运行时，多入口。** `src/fusion-app.mjs` 是独立进程入口，`src/host-entry.mjs` 是 Cordis 宿主插件入口；两者共享同一套会话、Provider、World 与上下文实现。
@@ -37,7 +47,7 @@ Cortico Bot / World    ─┼─►  Tina Fusion Host  ─►  Web / Mobile / TT
 
 ## 快速开始
 
-> 这是一套**真实部署**，不是一条命令就能跑的 npm 包。第一次搭建请按 [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) 逐步来。
+> 这是一套**真实部署**，不是一条命令就能跑的 npm 包。第一次搭建请按 [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) 逐步来。Windows 10/11 请看 [`docs/WINDOWS.md`](docs/WINDOWS.md)。
 
 环境要求：
 
@@ -101,7 +111,11 @@ npm start
 
 - [架构](docs/ARCHITECTURE.md) — 分层、请求流、提示词组装、端口
 - [记忆](docs/MEMORY.md) — 原话库、Git 画布、六个工具、生命周期
+- [冰山模型](docs/ICEBERG.md) — 水下原话、水上理解、引用与纪律
+- [Self-Mem 包](docs/SELF_MEM.md) — 独立安装、MCP/HTTP、数据布局
+- [DSH Host Plugin](docs/HOST_PLUGIN.md) — 挂到已有 DSH 会话、World 兼容边界
 - [部署](docs/DEPLOYMENT.md) — 构建、配置、systemd、备份
+- [Windows 预览](docs/WINDOWS.md) — PowerShell 安装、计划任务、限制
 - [来源映射](docs/SOURCE-MAP.md) — 版本、上游、保留与删除清单
 - [脱敏说明](docs/SANITIZATION.md) — 公开版删了什么、为什么
 
