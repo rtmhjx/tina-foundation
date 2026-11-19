@@ -4,6 +4,20 @@
 
 当前仓库的代码是跨平台的；差异主要在部署层：Linux 用 systemd、`linux-tools` 和 Linux 路径，Windows 用 PowerShell、计划任务和 `C:\` 路径。
 
+## 0. 验证到哪一步（2026-11-19）
+
+| 步骤 | 结果 |
+| --- | --- |
+| `npm ci --ignore-scripts` | 通过 |
+| `pnpm install --frozen-lockfile` | 通过（370 个包；`canvas` 预编译成功） |
+| `pnpm run build:web` | 通过（22 个前端产物） |
+| `npm run setup:memory` | 通过（同时修复了 self-mem 包内 UTF-8 BOM 导致的 JSON 解析失败） |
+| Windows 配置生成 + `icacls` | 通过 |
+| `build-fusion-native.mjs` | **未执行**（缺 `runtime/dsh-0.1.5-rc.2`） |
+| 实际启动 / Web 控制台 | **未验证**（同上） |
+
+所以这版是“安装链路可用、启动未验收”。真正的启动门槛是下一节的运行时闭包，不是 PowerShell 脚本本身。
+
 ## 1. 要求
 
 | 项目 | 要求 |
@@ -46,6 +60,8 @@ node scripts\stage-dsh-runtime.mjs --relocate "C:\path\to\tina-foundation\runtim
 ```
 
 目录正确时应该能看到 `runtime\dsh-0.1.5-rc.2\package.json`。
+
+> **不要**用 `rsync -L`、`cp -L` 或 `tar -h` 对整个闭包做“解引用复制”：pnpm 的 `node_modules` 链接存在环，会递归出极深的目录并写满磁盘。请原样复制目录，或使用发布包里已经准备好的闭包。
 
 ## 3. 安装
 

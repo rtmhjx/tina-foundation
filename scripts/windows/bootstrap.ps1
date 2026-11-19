@@ -118,6 +118,8 @@ if (-not $SkipNative) {
 }
 
 Write-Step 'Memory Bot'
+$hadConfig = Test-Path (Join-Path $StateDir 'deployment\config.json')
+$hadEnv = Test-Path (Join-Path $StateDir 'deployment\.env')
 $env:CORTICO_FUSION_STATE = $StateDir
 Invoke-Checked 'npm' @('run', 'setup:memory') $Root
 
@@ -125,15 +127,27 @@ Write-Step 'Deployment templates'
 $deploy = Join-Path $StateDir 'deployment'
 New-Item -ItemType Directory -Force -Path $deploy | Out-Null
 $configTarget = Join-Path $deploy 'config.json'
-if (-not (Test-Path $configTarget)) {
-    Copy-Item (Join-Path $Root 'config\config.windows.example.json') $configTarget
+if (-not $hadConfig) {
+    Copy-Item (Join-Path $Root 'config\config.windows.example.json') $configTarget -Force
+    $stateFwd = $StateDir.Replace('\', '/')
+    $text = [IO.File]::ReadAllText($configTarget, [Text.Encoding]::UTF8)
+    $text = $text.Replace('C:/Tina/state', $stateFwd)
+    $text = $text.Replace('YOUR_WINDOWS_USER', $env:USERNAME)
+    [IO.File]::WriteAllText($configTarget, $text, (New-Object Text.UTF8Encoding($false)))
     Write-Ok ('wrote ' + $configTarget)
 } else {
     Write-Warn ('kept existing ' + $configTarget)
 }
+$prompts = Join-Path $StateDir 'prompts'
+New-Item -ItemType Directory -Force -Path $prompts | Out-Null
+$seedTarget = Join-Path $prompts 'SEED.md'
+if (-not (Test-Path $seedTarget)) {
+    Copy-Item (Join-Path $Root 'config\SEED.example.md') $seedTarget -Force
+    Write-Ok ('wrote ' + $seedTarget)
+}
 $envTarget = Join-Path $deploy '.env'
-if (-not (Test-Path $envTarget)) {
-    Copy-Item (Join-Path $Root 'config\env.example') $envTarget
+if (-not $hadEnv) {
+    Copy-Item (Join-Path $Root 'config\env.example') $envTarget -Force
     Write-Ok ('wrote ' + $envTarget)
 } else {
     Write-Warn ('kept existing ' + $envTarget)
