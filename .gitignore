@@ -5,6 +5,8 @@ runtime/
 .install-cache/
 .tina-fusion-dev/
 /dist/
+.build/
+artifacts/
 *.tsbuildinfo
 
 # 运行状态与记忆数据

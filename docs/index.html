@@ -278,6 +278,22 @@
   .arch-detail li::before{color:var(--blue)}
   .flow b{color:var(--blue)}
   .world:hover .st{color:var(--blue);border-color:rgba(143,211,255,.45)}
+
+  /* packages */
+  .packs{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+  @media(max-width:900px){.packs{grid-template-columns:1fr}}
+  .pack{background:var(--panel);padding:28px 24px 24px;min-height:330px;position:relative;display:flex;flex-direction:column;transition:.3s var(--ease)}
+  .pack:hover{background:var(--panel-2);transform:translateY(-2px)}
+  .pack .pno{font-family:var(--mono);font-size:9px;letter-spacing:.16em;color:var(--dim)}
+  .pack .pstate{position:absolute;right:18px;top:22px;font-family:var(--mono);font-size:8px;letter-spacing:.12em;color:var(--blue);border:1px solid rgba(143,211,255,.3);padding:3px 6px}
+  .pack h3{margin:20px 0 10px;font-family:var(--serif);font-size:30px;font-weight:400;line-height:1;letter-spacing:-.02em}
+  .pack h3 em{font-style:italic;color:var(--gold)}
+  .pack p{margin:0 0 18px;font-size:13px;color:var(--muted);line-height:1.65}
+  .pack ul{list-style:none;margin:0 0 22px;padding:0;display:grid;gap:7px}
+  .pack li{font-family:var(--mono);font-size:10px;color:#b9c3d2;padding-left:14px;position:relative}
+  .pack li::before{content:"—";position:absolute;left:0;color:var(--gold)}
+  .pack a{margin-top:auto;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);border-bottom:1px solid transparent;width:max-content;transition:.2s}
+  .pack a:hover{border-bottom-color:var(--blue)}
   .num span{color:var(--blue-dim)}
   .req li span{color:var(--blue-dim)}
   .orbit .ring:nth-child(2){border-color:#2f4a6e}
@@ -297,6 +313,7 @@
       <a href="#architecture">架构</a>
       <a href="#memory">记忆</a>
       <a href="#worlds">世界</a>
+      <a href="#packages">包</a>
       <a href="#quickstart">开始</a>
       <a href="#limits" style="color:var(--signal)">边界</a>
     </nav>
@@ -501,10 +518,60 @@
     </div>
   </section>
 
+  <section id="packages" style="border-top:1px solid var(--line)">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="sec-no">05 / PACKAGES</div>
+        <div>
+          <h2>三个可下载件，<br><em>一套底座。</em></h2>
+          <p>不拆三个重复仓库：源码只有一份，按用途出包。Foundation 是完整宿主，Self-Mem 是记忆引擎，DSH Plugin 是把 World 挂到已有会话上的兼容层。</p>
+        </div>
+      </div>
+      <div class="packs reveal">
+        <article class="pack">
+          <span class="pno">01</span><span class="pstate">SOURCE</span>
+          <h3>Foundation</h3>
+          <p>完整融合宿主：Cortico 外壳、DSH 原生循环、Self-Mem 与九个 World。适合从零搭一台自己的 Tina。</p>
+          <ul>
+            <li>10,724 行 Host</li>
+            <li>Cortico + DSH + Self-Mem</li>
+            <li>Linux / Windows 预览</li>
+          </ul>
+          <a href="https://github.com/rtmhjx/tina-foundation" target="_blank" rel="noopener">仓库 ↗</a>
+        </article>
+        <article class="pack">
+          <span class="pno">02</span><span class="pstate">PACKAGE</span>
+          <h3>Self-<em>Mem</em></h3>
+          <p>连续记忆引擎：水下只增原话，水上 Git 画布与演进卡。可单独接 MCP、HTTP 或 Cortico Bot。</p>
+          <ul>
+            <li>冰山模型 · L0 + L1…Ln</li>
+            <li>六个工具 · 只增不改</li>
+            <li>v0.4.6-fusion.next.1</li>
+          </ul>
+          <a href="https://github.com/rtmhjx/tina-foundation/blob/main/docs/SELF_MEM.md" target="_blank" rel="noopener">说明书 ↗</a>
+        </article>
+        <article class="pack">
+          <span class="pno">03</span><span class="pstate">PACKAGE</span>
+          <h3>DSH <em>Plugin</em></h3>
+          <p>把 Cortico Worlds 挂到一个已经在跑的 DSH 会话上。不自带 DSH/Cordis，不复制第二套 AgentLoop。</p>
+          <ul>
+            <li>host-chat · World 工具/事件</li>
+            <li>借用宿主 Cordis 4.0.2</li>
+            <li>v0.2.0-fusion.9</li>
+          </ul>
+          <a href="https://github.com/rtmhjx/tina-foundation/blob/main/docs/HOST_PLUGIN.md" target="_blank" rel="noopener">说明书 ↗</a>
+        </article>
+      </div>
+      <p style="margin-top:18px;font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--dim)">
+        DOWNLOADS / <a href="https://github.com/rtmhjx/tina-foundation/releases" target="_blank" rel="noopener" style="color:var(--blue)">GITHUB RELEASES ↗</a>
+      </p>
+    </div>
+  </section>
+
   <section id="quickstart" style="border-top:1px solid var(--line)">
     <div class="wrap">
       <div class="sec-head reveal">
-        <div class="sec-no">05 / QUICKSTART</div>
+        <div class="sec-no">06 / QUICKSTART</div>
         <div>
           <h2>能跑，<br><em>但要按步骤来。</em></h2>
           <p>这不是一条命令就能启动的 npm 包。第一次搭建请按 <a href="https://github.com/rtmhjx/tina-foundation/blob/main/docs/DEPLOYMENT.md" target="_blank" rel="noopener" style="color:var(--gold);border-bottom:1px solid rgba(217,180,91,.35)">DEPLOYMENT.md</a> 走。</p>
@@ -553,7 +620,7 @@ npm start</pre>
   <section id="limits" style="border-top:1px solid var(--line)">
     <div class="wrap">
       <div class="sec-head reveal">
-        <div class="sec-no">06 / LIMITS</div>
+        <div class="sec-no">07 / LIMITS</div>
         <div>
           <h2>先承认它<br><em>不完善。</em></h2>
           <p>这是一套真实部署，不是成熟产品。下面每一条都会影响你敢不敢把它放到生产环境。</p>

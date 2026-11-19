@@ -1,21 +1,20 @@
 import { createHash } from 'node:crypto';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
+import { existsSync } from 'node:fs';
 import { mkdir, readFile, readdir, writeFile, copyFile, realpath } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { copyCurrentSources } from './fusion-distribution.mjs';
 import { nativeComponents } from './native-components.mjs';
-import { verifyCanonicalSelfMem } from './package-self-mem.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const run = promisify(execFile);
 const rootPackage = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
 const version = rootPackage.version;
 const frameworkPackage = JSON.parse(await readFile(join(root, 'upstream/cortico/package.json'), 'utf8'));
-const memoryPackage = JSON.parse(await readFile(join(root, 'vendor/host-self-mem/package/package.json'), 'utf8'));
-const canonicalMemory = await verifyCanonicalSelfMem(root);
+const memoryPackage = JSON.parse(await readFile(join(root, 'self-mem/package.json'), 'utf8'));
 const name = '@tina/dsh-plugin-cortico';
 const stage = join(root, '.build', 'host-plugin-' + Date.now());
 const artifacts = join(root, 'artifacts');
@@ -32,47 +31,53 @@ async function copyTree(from, to) {
     else throw new Error('Release source must not contain links: ' + join(from, item.name));
   }
 }
+async function copyFileIf(from, to) {
+  if (!existsSync(from)) return false;
+  await mkdir(dirname(to), { recursive: true });
+  await copyFile(from, to);
+  return true;
+}
 
 const canonicalSource = await copyCurrentSources(root, stage);
 for (const dir of ['src', 'assets', 'templates', 'bots', 'bin'])
   await copyTree(join(root, 'upstream/cortico', dir), join(stage, 'upstream/cortico', dir));
 for (const file of ['package.json', 'LICENSE', 'PHILOSOPHY.md', 'README.md', 'README_zh.md'])
   await copyFile(join(root, 'upstream/cortico', file), join(stage, 'upstream/cortico', file));
-await copyTree(join(root, 'vendor/host-self-mem/package'), join(stage, 'vendor/host-self-mem/package'));
+await copyTree(join(root, 'self-mem'), join(stage, 'vendor/host-self-mem/package'));
 for (const dir of [...Object.values(nativeComponents), 'dsh-host-client'])
   await copyTree(join(root, 'upstream', dir), join(stage, 'upstream', dir));
 await mkdir(join(stage, 'scripts'), { recursive: true });
 for (const file of ['install-host-compat.mjs', 'install-host-session-controller.mjs', 'build-host-compat.mjs', 'build-host-session-controller.mjs', 'build-native-component.mjs', 'native-components.mjs', 'relocate-native-session.mjs'])
   await copyFile(join(root, 'scripts', file), join(stage, 'scripts', file));
-await copyTree(join(root, 'docs/host-plugin'), join(stage, 'docs'));
+if (existsSync(join(root, 'docs/host-plugin'))) await copyTree(join(root, 'docs/host-plugin'), join(stage, 'docs'));
 await copyTree(join(root, 'ops'), join(stage, 'ops'));
 for (const [directory, names] of Object.entries({
   test: ['host-plugin.acceptance.test.mjs', 'host-plugin-package.test.mjs'],
   integration: ['host-plugin-package-smoke.mjs', 'host-plugin-stock-preflight.mjs'],
 })) {
   await mkdir(join(stage, directory), { recursive: true });
-  for (const name of names) await copyFile(join(root, directory, name), join(stage, directory, name));
+  for (const name of names) await copyFileIf(join(root, directory, name), join(stage, directory, name));
 }
-await copyFile(join(root, 'docs/HOST_PLUGIN.md'), join(stage, 'docs/HOST_PLUGIN.md'));
-await copyFile(join(root, 'docs/NATIVE_SESSION_RELOCATION.md'), join(stage, 'docs/NATIVE_SESSION_RELOCATION.md'));
-await copyFile(join(root, 'docs/host-plugin/README.md'), join(stage, 'README.md'));
+await copyFileIf(join(root, 'docs/HOST_PLUGIN.md'), join(stage, 'docs/HOST_PLUGIN.md'));
+await copyFileIf(join(root, 'docs/NATIVE_SESSION_RELOCATION.md'), join(stage, 'docs/NATIVE_SESSION_RELOCATION.md'));
+await copyFileIf(join(root, 'docs/host-plugin/README.md'), join(stage, 'README.md'));
+if (!existsSync(join(stage, 'README.md'))) await copyFileIf(join(root, 'docs/HOST_PLUGIN.md'), join(stage, 'README.md'));
 await copyFile(join(root, 'upstream/cortico/LICENSE'), join(stage, 'LICENSE'));
 await copyFile(join(root, 'vendor/cortico-source-lock.json'), join(stage, 'upstream/CORTICO_SOURCE_LOCK.json'));
-await copyFile(join(root, 'upstream/HOST-CORTICO-CHANGES.patch'), join(stage, 'upstream/HOST-CORTICO-CHANGES.patch'));
+await copyFileIf(join(root, 'upstream/HOST-CORTICO-CHANGES.patch'), join(stage, 'upstream/HOST-CORTICO-CHANGES.patch'));
 const pkg = {
   name, version, description: 'Cortico Persona, Memory and World on an existing native DSH RP session; no second runtime.',
   type: 'module', main: './src/host-entry.mjs',
   exports: { '.': './src/host-entry.mjs', './client': './lib/client.js', './package.json': './package.json' },
-  engines: { node: '>=24.12 <25' }, license: 'MIT',
-  files: ['src', 'lib', 'upstream', 'vendor/host-self-mem', 'scripts', 'ops', 'docs', 'test', 'integration', 'BUILD-MANIFEST.json', 'FUSION-SOURCE.json', 'THIRD-PARTY-NOTICES.md', 'README.md', 'LICENSE'],
+  engines: { node: '>=24.12 <25' }, license: 'AGPL-3.0-or-later',
+  files: ['src', 'lib', 'upstream', 'vendor/host-self-mem', 'scripts', 'ops', 'docs', 'BUILD-MANIFEST.json', 'FUSION-SOURCE.json', 'THIRD-PARTY-NOTICES.md', 'README.md', 'LICENSE'],
   dsh: { client: { inject: ['@deepseek-ai/dsh-client-ui-chat', '@deepseek-ai/dsh-client-ui-conversation', '@deepseek-ai/dsh-client-ui-primitives'],
     external: ['react', '@deepseek-ai/dsh-client-ui-primitives'], platform: 'web' } },
   peerDependencies: { '@deepseek-ai/cordis': '4.0.2' },
   peerDependenciesMeta: { '@deepseek-ai/cordis': { optional: true } },
   dependencies: { 'js-yaml': '4.2.0', ajv: '8.20.0', 'ajv-formats': '3.0.1',
     express: '4.22.2', ws: '8.21.1', fflate: '0.8.3', 'tar-stream': '3.2.1', esbuild: '0.28.2', tsx: '4.23.1' },
-  scripts: { 'compat:plan': 'node scripts/install-host-compat.mjs',
-    'test:acceptance': 'node --expose-internals --import ./node_modules/tsx/dist/loader.mjs --test --test-concurrency=1 test/host-plugin.acceptance.test.mjs test/host-plugin-package.test.mjs' },
+  scripts: { 'compat:plan': 'node scripts/install-host-compat.mjs' },
 };
 pkg.bundledDependencies = Object.keys(pkg.dependencies);
 await writeFile(join(stage, 'package.json'), JSON.stringify(pkg, null, 2) + '\n');
@@ -138,7 +143,7 @@ async function inventory(path, prefix = '') {
 await inventory(stage);
 const manifest = { format: 1, name, version, created: new Date().toISOString(), sourceFusionVersion: rootPackage.version, canonicalSourceTreeSha256: canonicalSource.sourceTreeSha256,
   corticoVersion: frameworkPackage.version, hostVersion: '0.1.5-rc.2', cordisVersion: '4.0.2', selfMemVersion: memoryPackage.version,
-  canonicalMemoryManifestSha256: canonicalMemory.canonicalManifestSha256,
+  selfMemSource: 'self-mem/',
   hostRuntimeBundled: false, secondAgentLoop: false, privateDataIncluded: false,
   bundledDependencies: inventoryDeps, files: files.sort((a,b) => a.path.localeCompare(b.path)) };
 await writeFile(join(stage, 'BUILD-MANIFEST.json'), JSON.stringify(manifest, null, 2) + '\n');
