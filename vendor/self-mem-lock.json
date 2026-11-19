@@ -3,7 +3,7 @@
   "package": "@tina/self-mem",
   "version": "0.4.6-fusion.next.1",
   "archive": "tina-self-mem-0.4.6-fusion.next.1.tgz",
-  "archiveSha256": "7a3896616015f16c8c5117f396a99312f4fa231ef570d9d44a974a36101dbb31",
+  "archiveSha256": "5d771e671986e550b5edd40d82c2dadd7e2bb64fff459c7c12097af981e3ed3c",
   "contract": {
     "kind": "bot",
     "api": 7
