@@ -1,0 +1,36 @@
+{
+  "pinnedRuntime": "dsh-0.1.5-rc.2",
+  "originalBundledSha256": "169bc0785d80a10e4d8d43f11a34a15174b60d194ca13bd702b2b139edc44e78",
+  "originalSource": "F:\\AI\\探索\\deepseek-harness\\packages\\compaction\\compaction-basic\\src",
+  "files": [
+    {
+      "file": "config.ts",
+      "originalSha256": "d4d63fe3a6e7b3d00c91aafcba86cf5a9f5417739c406b26d87dac470f738681",
+      "candidateSha256": "d4d63fe3a6e7b3d00c91aafcba86cf5a9f5417739c406b26d87dac470f738681"
+    },
+    {
+      "file": "index.ts",
+      "originalSha256": "f824fc6f586c6ec7ae26442656d789accd0b5124924886e91b480bc587b1491d",
+      "candidateSha256": "492d8f80b0d9ea4363af290d25574caba38839272fc1c9712b39b41f4f194998"
+    },
+    {
+      "file": "region.ts",
+      "originalSha256": "df672f3c4467e024fd710adec52a69491ce383b083e95d5733ae16a959cf930f",
+      "candidateSha256": "0e2b1eb8ed02e5d879b82f8d5ed9c1a9265dce39267ee07a293c203a8f7965d2"
+    },
+    {
+      "file": "summarizer.ts",
+      "originalSha256": "fcf7fd42d1ea9b90fe259438431590abfb85a8a352f1fbc10b92d4dfcaf797bc",
+      "candidateSha256": "96a2087600c6c3306ce16f6eb9006231da03499b852806c5961f80790138420f"
+    },
+    {
+      "file": "types.ts",
+      "originalSha256": "0b2c6dc3839bb43544b1dd9dbf678918578ff88ea00100eac1c0c2e7153ce0b4",
+      "candidateSha256": "0b2c6dc3839bb43544b1dd9dbf678918578ff88ea00100eac1c0c2e7153ce0b4"
+    }
+  ],
+  "addedGuardSha256": "a5c1a9338fb3dceeccd981edcb98d3bface3231d1bb52b66873891a6a74fbb9f",
+  "bundledSha256": "6b9a378aa9d3453b495a0cfab2d468f4b949b2617655ee3b9804fc8157a3cfdd",
+  "bundler": "esbuild 0.28.1, bundle node esm target node24 packages external",
+  "requiresRebuild": true
+}

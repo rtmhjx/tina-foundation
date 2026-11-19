@@ -1,0 +1,82 @@
+{
+  "format": 1,
+  "kind": "read-only-source-copy-baseline",
+  "upstream": "https://github.com/deepseek-ai/deepseek-harness",
+  "upstreamCommit": "fb2c4b9e698e30edb738bca4cf0618587db7d203",
+  "originalSource": "deepseek-harness/packages/core/tools",
+  "source": "packages/core/tools",
+  "stagedRuntimeIndexSha256": "565e809adcc9897b45751b3c0e7df8326aa0b5e4e0ef8755f1fe4b9e3a84044f",
+  "sourceTreeSha256": "f40c95a5fb994087a3add43ee81d6b9434b1113afbc08fb452d540208118dc07",
+  "files": [
+    {
+      "path": "LICENSE",
+      "bytes": 1065,
+      "sha256": "ebb4f09972aee8608be255debaf78451a68e95c290f55c240dec2ecfa16ea6be"
+    },
+    {
+      "path": "package.json",
+      "bytes": 2222,
+      "sha256": "f1ec5bf891ebcf8d7c15f2a723f6f0aa0b2d28f809f0e87f444a17015052a521"
+    },
+    {
+      "path": "README.md",
+      "bytes": 16913,
+      "sha256": "93858454b3335ac24e6450ace67fe38ac9664d1c51c30edbf3a38ee847d6f97c"
+    },
+    {
+      "path": "src/index.ts",
+      "bytes": 87748,
+      "sha256": "cc8d54b6a0d6005a26871e84ce3390ba0bbd7fa61a8c65d4b9cc2fbd86126ac2"
+    },
+    {
+      "path": "src/invariant.ts",
+      "bytes": 5708,
+      "sha256": "c954a0e1410718c6e9597e26eadb4329f121f11887ad319d1ec3add3a9de13a1"
+    },
+    {
+      "path": "src/json-schema.ts",
+      "bytes": 26289,
+      "sha256": "13deffdfd34539e23706b0fde235991da45b2f07c5c18dbbf3ca734c1da0c788"
+    },
+    {
+      "path": "src/presentation.ts",
+      "bytes": 16880,
+      "sha256": "2e729538403ef924430187df13ec5e140de95e0ea41a8225093dba644c1f2b6a"
+    },
+    {
+      "path": "src/ptc.ts",
+      "bytes": 33128,
+      "sha256": "c0dda3a17a5c70503b41779605fd323d81e5c571758eb3012086c971f8fabe09"
+    },
+    {
+      "path": "src/py-types.ts",
+      "bytes": 47527,
+      "sha256": "a9894e3555ad9767d4a4b2de30f6d4d717438f7abf686e07688298db51a96cef"
+    },
+    {
+      "path": "src/schema.ts",
+      "bytes": 25337,
+      "sha256": "be6e4b3fa18fe633c6c83ed4f9072da5a2a203f64bf0b70c9066fd58b0e2c897"
+    },
+    {
+      "path": "src/testing.ts",
+      "bytes": 1723,
+      "sha256": "8b7bf72750d885c1acb52e99ccac9e42542cc5efcb581098ad3507e83ca0a651"
+    },
+    {
+      "path": "src/ts-types.ts",
+      "bytes": 15001,
+      "sha256": "473562e67f2282579b2abb451acee759e2d2af681a051690c4980af4459016e1"
+    },
+    {
+      "path": "src/types.ts",
+      "bytes": 2533,
+      "sha256": "de80788a12dccc3a3f43129da6d46268774aabf09445e0a97383e23a83633116"
+    },
+    {
+      "path": "tsconfig.json",
+      "bytes": 725,
+      "sha256": "7122dbdc4ebd949207505b3e77cee84dd2303cdb6fe544f21f2b97cfa5efc321"
+    }
+  ]
+}

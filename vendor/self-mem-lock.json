@@ -1,0 +1,14 @@
+{
+  "format": 1,
+  "package": "@tina/self-mem",
+  "version": "0.4.6-fusion.next.1",
+  "archive": "tina-self-mem-0.4.6-fusion.next.1.tgz",
+  "archiveSha256": "7a3896616015f16c8c5117f396a99312f4fa231ef570d9d44a974a36101dbb31",
+  "contract": {
+    "kind": "bot",
+    "api": 7
+  },
+  "canonicalSource": "self-mem",
+  "provenance": "Public snapshot built from self-mem/ after removing deployment-specific seeds and private paths. The archive contains only the whitelisted package files.",
+  "license": "AGPL-3.0-or-later"
+}

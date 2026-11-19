@@ -1,0 +1,1 @@
+CANBOT custom 播放 helper 的退出码 76 表示 `outcome_unknown`：未确认设备播放完成或停止，不能自动重放。`audio_queue skip/clear` 返回 `cancel_requested` 只表示已请求取消；等待设备结算。即使已经请求取消，未知结果仍会作为 `audio-play.failed` 事件送达。音频队列等待 helper 子进程退出后再处理下一项，子进程退出不等于设备物理停止；不要把未知回执改写成已完成或已停止。

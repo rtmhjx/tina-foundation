@@ -1,0 +1,222 @@
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { URL, fileURLToPath, pathToFileURL } from 'node:url';
+import type { LLMProviderEntry } from '../core/types.ts';
+import type { BaseProvider, ProviderHostBase, ProviderInstance, ProviderModule } from './base.ts';
+import { ImageFallback } from './transport/image-fallback.ts';
+import { quotePrices } from './pricebook.ts';
+import { createHash } from 'node:crypto';
+import { secretReader } from '../core/secrets.ts';
+import type { ResponseClient } from '../core/generation.ts';
+
+/** Modules are discovered from providers/<module>/index.ts. */
+export async function discoverProviderModules(
+  root = fileURLToPath(new URL('.', import.meta.url)),
+): Promise<ProviderModule[]> {
+  const modules: ProviderModule[] = [];
+  for (const dir of readdirSync(root, { withFileTypes: true }).sort((a, b) =>
+    a.name.localeCompare(b.name),
+  )) {
+    if (!dir.isDirectory()) continue;
+    const entry = join(root, dir.name, 'index.ts');
+    if (!existsSync(entry)) continue;
+    const module = (await import(pathToFileURL(entry).href)).default as ProviderModule;
+    if (module.id !== dir.name)
+      throw new Error(`Provider module ID must match directory: ${dir.name}`);
+    modules.push(module);
+  }
+  return modules;
+}
+
+export const providerModules = await discoverProviderModules();
+const byId = new Map(providerModules.map((module) => [module.id, module]));
+interface ModuleRegistration {
+  id: string;
+  module: ProviderModule;
+  active: boolean;
+}
+const registrations = new Map<string, ModuleRegistration>();
+
+/**
+ * 追加扩展带来的 provider 模块。就地改这一个数组,不换引用:`ProviderRegistry` 与
+ * `ProviderSettings` 的默认参数引用的就是它,而两者都在启动器注册完之后才构造。
+ * id 撞车直接抛:一个 kind 对应哪份实现不能有歧义。
+ */
+export function registerProviderModules(extra: readonly ProviderModule[]): () => void {
+  const ids = new Set<string>();
+  for (const module of extra) {
+    if (ids.has(module.id) || byId.has(module.id)) throw new Error(`Provider module id 已被占用: ${module.id}`);
+    ids.add(module.id);
+  }
+  const owned = extra.map(module => ({ id: module.id, module, active: true }));
+  for (const registration of owned) {
+    const { id, module } = registration;
+    registrations.set(id, registration);
+    byId.set(module.id, module);
+    providerModules.push(module);
+  }
+  return () => {
+    for (const registration of owned) {
+      if (!registration.active) continue;
+      registration.active = false;
+      const { id, module } = registration;
+      if (registrations.get(id) !== registration) continue;
+      registrations.delete(id);
+      if (byId.get(id) !== module) continue;
+      byId.delete(id);
+      providerModules.splice(providerModules.indexOf(module), 1);
+    }
+  };
+}
+
+/** Failed package removal restores the module while its original registration is still owned. */
+export async function removeProviderModule(id: string, remove: () => Promise<string>): Promise<string> {
+  const module = providerModule(id);
+  const registration = registrations.get(id);
+  const index = providerModules.indexOf(module);
+  byId.delete(id);
+  providerModules.splice(index, 1);
+  try {
+    const result = await remove();
+    if (registration) {
+      registration.active = false;
+      if (registrations.get(id) === registration) registrations.delete(id);
+    }
+    return result;
+  }
+  catch (error) {
+    const stillOwned = registration
+      ? registration.active && registrations.get(id) === registration
+      : !registrations.has(id);
+    if (stillOwned && !byId.has(id)) {
+      byId.set(id, module);
+      providerModules.splice(index, 0, module);
+    }
+    throw error;
+  }
+}
+
+export function providerModule(kind: string): ProviderModule {
+  const module = byId.get(kind);
+  if (!module) throw new Error(`Unknown provider module: ${kind}`);
+  return module;
+}
+
+export class ProviderRegistry {
+  private readonly instances = new Map<string, { key: string; value: ProviderInstance }>();
+  private readonly resources = new Map<string, unknown>();
+  /** One per instance: `bind` runs on every request, and the fallback holds the handles the service refused. */
+  private readonly imageFallbacks = new WeakMap<ProviderInstance, BaseProvider>();
+  constructor(
+    private readonly entries: () => Record<string, LLMProviderEntry>,
+    private readonly host: ProviderHostBase,
+    private readonly modules: readonly ProviderModule[] = providerModules,
+    /** Secrets read before the process environment and the endpoint `.env`; preview registries carry the typed, unsaved key here. */
+    private readonly secretOverrides: Readonly<Record<string, string>> = {},
+  ) {}
+
+  private module(kind: string): ProviderModule {
+    const module = this.modules.find((module) => module.id === kind);
+    if (!module) throw new Error(`Unknown provider module: ${kind}`);
+    return module;
+  }
+
+  /**
+   * A registry over one detached entry. Its instances never enter the live cache; `secrets`
+   * are the values the WebUI holds but has not written to the endpoint's `.env`.
+   */
+  previewRegistry(name: string, entry: LLMProviderEntry, secrets: Readonly<Record<string, string>> = {}): ProviderRegistry {
+    return new ProviderRegistry(() => ({ [name]: entry }), this.host, this.modules, secrets);
+  }
+
+  preview(name: string, entry: LLMProviderEntry): ProviderInstance {
+    return this.previewRegistry(name, entry).resolve(name);
+  }
+
+  resolve(name: string): ProviderInstance {
+    const raw = this.entries()[name];
+    if (!raw) throw new Error(`没有这个 LLM provider: ${name}`);
+    const module = this.module(raw.kind);
+    const entry = module.normalize?.(structuredClone(raw)) ?? structuredClone(raw);
+    const { pricing: _pricing, spec: _spec, ...transportEntry } = entry;
+    // 密钥在实例创建时定格,`.env` 的内容指纹进缓存键:文件变更后下一次解析重建实例。
+    const stateDir = join(this.host.stateRoot, name);
+    const envFile = join(stateDir, '.env');
+    const fingerprint = existsSync(envFile) ? createHash('sha256').update(readFileSync(envFile)).digest('hex') : '';
+    const key = JSON.stringify([transportEntry, fingerprint]);
+    const previous = this.instances.get(name);
+    if (previous?.key === key) return previous.value;
+    // 按端点名分岔的两样在这里填:模块自己的目录,与只读那个目录的密钥链。
+    const { stateRoot: _stateRoot, ...base } = this.host;
+    const stored = secretReader(envFile);
+    const value = module.create(name, entry, {
+      ...base,
+      stateDir,
+      secret: (key) => this.secretOverrides[key] ?? stored(key),
+      currentEntry: () =>
+        module.normalize?.(structuredClone(this.entries()[name])) ?? this.entries()[name],
+      resource: <T>(resource: string, create: () => T): T => {
+        const id = JSON.stringify([module.id, name, resource]);
+        if (!this.resources.has(id)) this.resources.set(id, create());
+        return this.resources.get(id) as T;
+      },
+    });
+    this.instances.set(name, { key, value });
+    return value;
+  }
+
+  bind(name: string): ResponseClient {
+    const raw = this.entries()[name];
+    if (!raw) throw new Error(`没有这个 LLM provider: ${name}`);
+    const module = this.module(raw.kind);
+    const entry = module.normalize?.(structuredClone(raw)) ?? structuredClone(raw);
+    const instance = this.resolve(name);
+    const target = this.imageFallback(instance, module, entry);
+    const domain = () =>
+      createHash('sha256')
+        .update(JSON.stringify([entry.kind, entry.baseUrl, instance.compatibilityKey?.() ?? null]))
+        .digest('hex');
+    const client: ResponseClient = {
+      bind: () => client,
+      respond: (request, options) =>
+        target.respond(request, {
+          ...options,
+          quote: (at) => quotePrices(entry, request, at, module.prices?.(entry, request, at) ?? []),
+          origin: {
+            instance: name,
+            module: entry.kind,
+            model: request.model ?? '',
+            compatibilityDomain: domain(),
+          },
+        }),
+    };
+    return client;
+  }
+
+  /** The instance's client behind an `ImageFallback`; the client itself when the instance declares `handlesRefusedImages`. */
+  private imageFallback(instance: ProviderInstance, module: ProviderModule, entry: LLMProviderEntry): BaseProvider {
+    if (instance.handlesRefusedImages) return instance.client;
+    let fallback = this.imageFallbacks.get(instance);
+    if (!fallback) {
+      fallback = new ImageFallback(instance.client, {
+        media: { enabled: () => entry.multimodal === true, read: this.host.readBlob },
+        contextOverflow: (error) => module.contextOverflow?.(error) ?? false,
+        log: this.host.log,
+      });
+      this.imageFallbacks.set(instance, fallback);
+    }
+    return fallback;
+  }
+
+  /** Drop the cached instance so the next resolve rebuilds it; `host.resource` objects survive. */
+  invalidate(name: string): void {
+    this.instances.delete(name);
+  }
+
+  async start(name: string): Promise<unknown> {
+    return this.resolve(name).start?.();
+  }
+  async stopAll(): Promise<void> {
+    await Promise.all([...this.instances.values()].map((instance) => instance.value.stop?.()));
+  }
+}

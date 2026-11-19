@@ -1,0 +1,46 @@
+{
+  "format": 1,
+  "package": "@deepseek-ai/dsh-compaction-basic",
+  "version": "0.1.5-rc.2",
+  "sourceCapability": "registerFusionCompactionCoordinator",
+  "baselineSha256": "169bc0785d80a10e4d8d43f11a34a15174b60d194ca13bd702b2b139edc44e78",
+  "compatibleInputSha256": [],
+  "overlaySha256": "bdfcbc74a2cbed9153ee7dc5339639d971dc3717fdb503435b3b5e4f436cf6f5",
+  "entryFamily": {},
+  "payloadFiles": [
+    {
+      "path": "lib/index.js",
+      "sha256": "bdfcbc74a2cbed9153ee7dc5339639d971dc3717fdb503435b3b5e4f436cf6f5"
+    },
+    {
+      "path": "lib/index.js.map",
+      "sha256": "e969d67f61ab7082e522829ad319cae5e2811f7d1011498d2c49bdc3a2cb98a8"
+    }
+  ],
+  "sourceFiles": [
+    {
+      "path": "config.ts",
+      "sha256": "d4d63fe3a6e7b3d00c91aafcba86cf5a9f5417739c406b26d87dac470f738681"
+    },
+    {
+      "path": "fusion-guard.ts",
+      "sha256": "a5c1a9338fb3dceeccd981edcb98d3bface3231d1bb52b66873891a6a74fbb9f"
+    },
+    {
+      "path": "index.ts",
+      "sha256": "492d8f80b0d9ea4363af290d25574caba38839272fc1c9712b39b41f4f194998"
+    },
+    {
+      "path": "region.ts",
+      "sha256": "0e2b1eb8ed02e5d879b82f8d5ed9c1a9265dce39267ee07a293c203a8f7965d2"
+    },
+    {
+      "path": "summarizer.ts",
+      "sha256": "96a2087600c6c3306ce16f6eb9006231da03499b852806c5961f80790138420f"
+    },
+    {
+      "path": "types.ts",
+      "sha256": "0b2c6dc3839bb43544b1dd9dbf678918578ff88ea00100eac1c0c2e7153ce0b4"
+    }
+  ]
+}

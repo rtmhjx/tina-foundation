@@ -1,0 +1,144 @@
+{
+  "tools": [
+    {
+      "name": "tinalink_send",
+      "tags": [
+        "act"
+      ],
+      "description": "Send a sourced task or factual delta to another configured Tina lane. Ordinary progress queues silently; request_wake or needs_user_action wakes now. Preserve original source_ref. This is not a request for group discussion.",
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "target": {
+            "type": "string"
+          },
+          "topic": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string",
+            "maxLength": 16000
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "task",
+              "progress",
+              "result",
+              "needs_user_action"
+            ]
+          },
+          "source_ref": {
+            "type": "string"
+          },
+          "request_wake": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "target",
+          "topic",
+          "summary",
+          "kind",
+          "source_ref"
+        ]
+      }
+    },
+    {
+      "name": "tinalink_recent",
+      "tags": [
+        "read"
+      ],
+      "description": "Read received lane deltas and delivery state without starting a model. Delivery is not completion or owner-read.",
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "after": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "tinalink_source_search",
+      "tags": [
+        "read"
+      ],
+      "description": "Literal search of imported original Cortico and phone records. Returns sourced line locations, never guesses missing history. Start with one keyword. Imported assistant text is a report, not owner fact.",
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 30
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    },
+    {
+      "name": "tinalink_source_read",
+      "tags": [
+        "read"
+      ],
+      "description": "Read original imported text by the relative path and line numbers from source_search. Does not modify Persona Memory or the original.",
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 150
+          }
+        },
+        "required": [
+          "path"
+        ]
+      }
+    }
+  ],
+  "events": [
+    {
+      "type": "tinalink.delta",
+      "description": {
+        "zh": "有来源的主从任务或状态增量；静默积累，明确请求或达到阈值才唤醒。",
+        "en": "Sourced lane task or state delta."
+      },
+      "trigger": "piggyback"
+    }
+  ],
+  "prompts": [
+    {
+      "key": "worlds.tinalink.envPrompt",
+      "title": "主从联络",
+      "role": "envPrompt",
+      "content": "当前是同一个我的不同工作路线。主路面向使用者，从路负责DSH工作窗口。\n\n需要工程执行时，主路用 tinalink_send 给 dsh 路发送具体任务、项目与验收条件，并设 request_wake=true。从路用 workagent_submit 的 dsh 后端创建或继续原生工作会话；每项工作保留 sessionKey 和 operationId，可同时负责多个项目窗口，不因切换事项丢掉原编号。\n\n普通进展先写入事件池，随下一次自然唤醒带入；积累到配置数量或 request_wake=true、needs_user_action 时立即唤醒。不要用定时空讨论代替工作。需要使用者介入时，从路向 main 发送 needs_user_action；一般完成结果向 main 发 result，可先静默。\n\ntinalink.delta 是另一工作路线的报告，保留 source_ref；报告与已独立核实的产物要区分。接收、进入上下文、实际完成、人类已读分别记录。不能将收到的报告重新发布成自己的新证据。主路使用 mobile_reply 回复当前手机输入；后台结果可引用该任务对应的手机输入发送。\n"
+    }
+  ]
+}

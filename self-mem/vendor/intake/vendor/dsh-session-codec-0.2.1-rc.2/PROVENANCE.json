@@ -1,0 +1,43 @@
+{
+  "repository": "https://github.com/deepseek-ai/deepseek-harness",
+  "tag": "dsh-v0.2.1-rc.2",
+  "commit": "687f282e8625c6b8d11ff58211a90524be2e4317",
+  "source": "Local Git object store, exact tag objects; running worktree version was not used.",
+  "files": [
+    {
+      "path": "packages/session/session-persistence-jsonl/src/zstd.ts",
+      "sha256": "b100f7c208acbf34e61351236b82be4c93a47c7d25926b8e9478a6156f2f0ff5"
+    },
+    {
+      "path": "packages/session/session-persistence-jsonl/src/zstd-private-decoder.ts",
+      "sha256": "8bc5fef50df97985cb3c1184dad8f30c099452b9f80546ac71e8c19fd4614d63"
+    },
+    {
+      "path": "packages/session/session-persistence-jsonl/src/zstd-public-decoder.ts",
+      "sha256": "d5ac67fb55c01da8fcf4f73f3500f4b9463cfea0ce1d9e7f02c973ddfb5035a5"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "ebb4f09972aee8608be255debaf78451a68e95c290f55c240dec2ecfa16ea6be"
+    }
+  ],
+  "changes": "None; original upstream source and license bytes retained.",
+  "generated": [
+    {
+      "file": "zstd.mjs",
+      "sha256": "6d95f4020c468c3aff74d476ddaea1c004866d2cf3007f2f75a3b2596f959fd1",
+      "from": "zstd.ts"
+    },
+    {
+      "file": "zstd-private-decoder.mjs",
+      "sha256": "0e597a5e468492c885d378839ebf60afec5f4bde31d39a12fd2e820cc004c3be",
+      "from": "zstd-private-decoder.ts"
+    },
+    {
+      "file": "zstd-public-decoder.mjs",
+      "sha256": "d204e167ac24522021679abd9e4d3d240ac0a705049987732aa249ed984bcdb0",
+      "from": "zstd-public-decoder.ts"
+    }
+  ],
+  "generatedBy": "Node v24.19.0 node:module.stripTypeScriptTypes(mode=transform); only runtime import extensions changed from .ts to .mjs."
+}

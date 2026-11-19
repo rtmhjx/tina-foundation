@@ -1,0 +1,53 @@
+{
+  "tools": [
+    {
+      "name": "linux_run",
+      "interruptible": true,
+      "tags": [
+        "write"
+      ],
+      "description": "无需审批，直接运行 Linux Bash/Python/Node 命令。可自由读写 /workspace（持久，容量512MiB），/tmp 临时。宿主服务、其他目录、密钥、记忆、磁盘设备、网络均不可达；命令看到的是隔离环境。用于文件处理、计算、脚本和小任务；服务器真实状态用 linux_status。退出不为0请检查 stderr；超时或取消不会回滚已写的文件。不要将已完成命令重复提交。",
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "command"
+        ],
+        "properties": {
+          "command": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 16000
+          },
+          "timeout_seconds": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 120,
+            "default": 60
+          }
+        }
+      },
+      "summary": {
+        "zh": "无需审批，直接运行 Linux Bash/Python/Node 命令。可自由读写 /workspace（持久，容量512MiB），/tmp 临时。宿主服务、其他目录、密钥、记忆、磁盘设备、网络均不可达；命令看到的是隔离环境。用于文件处理、计算、脚本和小任务；服务器真实状态用 linux_status。退出不为0请检查 stderr；超时或取消不会回滚已写的文件。不要将已完成命令重复提交。",
+        "en": "无需审批，直接运行 Linux Bash/Python/Node 命令。可自由读写 /workspace（持久，容量512MiB），/tmp 临时。宿主服务、其他目录、密钥、记忆、磁盘设备、网络均不可达；命令看到的是隔离环境。用于文件处理、计算、脚本和小任务；服务器真实状态用 linux_status。退出不为0请检查 stderr；超时或取消不会回滚已写的文件。不要将已完成命令重复提交。"
+      }
+    },
+    {
+      "name": "linux_status",
+      "tags": [
+        "read"
+      ],
+      "description": "只读取得宿主服务器的时间、负载、内存、磁盘和自主工具边界，以及最近命令执行回执。这里的服务器指标来自宿主，不是命令隔离环境。无需审批，不唤醒其他 Agent。",
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {}
+      },
+      "summary": {
+        "zh": "只读取得宿主服务器的时间、负载、内存、磁盘和自主工具边界，以及最近命令执行回执。这里的服务器指标来自宿主，不是命令隔离环境。无需审批，不唤醒其他 Agent。",
+        "en": "只读取得宿主服务器的时间、负载、内存、磁盘和自主工具边界，以及最近命令执行回执。这里的服务器指标来自宿主，不是命令隔离环境。无需审批，不唤醒其他 Agent。"
+      }
+    }
+  ],
+  "events": []
+}

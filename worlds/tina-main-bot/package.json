@@ -1,0 +1,32 @@
+{
+  "name": "cortico-bot-tina-main",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Event-driven deployment of the CortiSoulmate Persona",
+  "license": "MIT",
+  "keywords": [
+    "cortico-bot",
+    "cortico"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "main": "./index.ts",
+  "files": [
+    "index.ts",
+    "webui",
+    "describe.json"
+  ],
+  "cortico": {
+    "kind": "bot",
+    "api": 7,
+    "tags": [],
+    "webUiClient": "./webui/client.js",
+    "webUiStyle": "./webui/client.css",
+    "describe": "describe.json"
+  },
+  "tina": {
+    "frameworkVersion": "0.2.8",
+    "frameworkCommit": "cd41f48567fac115278d29cd06924151e7043503"
+  }
+}

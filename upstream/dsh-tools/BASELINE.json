@@ -1,0 +1,95 @@
+{
+  "format": 1,
+  "package": "@deepseek-ai/dsh-tools",
+  "version": "0.1.5-rc.2",
+  "sourceOrigin": "F:\\AI\\\u63a2\u7d22\\deepseek-harness\\packages\\core\\tools",
+  "sourceBaselineLock": "vendor/dsh-tools-baseline-lock.json",
+  "sourceBaselineLockSha256": "7227a0e03af0a3ef7dcac4b7a2aab54ae1dfd8e8ac0dd53b5d2e0e94130d5e4a",
+  "runtimeBaseline": "F:\\AI\\\u63a2\u7d22\\deepseek-harness\\packages\\core\\tools",
+  "runtimeBaselineSha256": "aaba52bf5d0149355407642b3965c06977d1e9143f5c61bc19429abbe6a11c5d",
+  "compatibleInputSha256": [
+    "83f49679b059d69a5cf2c73944d5c605565ecebe7fa027d03f235d3f9e052070"
+  ],
+  "sourceFiles": [
+    {
+      "path": "LICENSE",
+      "bytes": 1065,
+      "sha256": "ebb4f09972aee8608be255debaf78451a68e95c290f55c240dec2ecfa16ea6be"
+    },
+    {
+      "path": "package.json",
+      "bytes": 2222,
+      "sha256": "f1ec5bf891ebcf8d7c15f2a723f6f0aa0b2d28f809f0e87f444a17015052a521"
+    },
+    {
+      "path": "README.md",
+      "bytes": 16913,
+      "sha256": "93858454b3335ac24e6450ace67fe38ac9664d1c51c30edbf3a38ee847d6f97c"
+    },
+    {
+      "path": "src/index.ts",
+      "bytes": 87748,
+      "sha256": "cc8d54b6a0d6005a26871e84ce3390ba0bbd7fa61a8c65d4b9cc2fbd86126ac2"
+    },
+    {
+      "path": "src/invariant.ts",
+      "bytes": 5708,
+      "sha256": "c954a0e1410718c6e9597e26eadb4329f121f11887ad319d1ec3add3a9de13a1"
+    },
+    {
+      "path": "src/json-schema.ts",
+      "bytes": 26289,
+      "sha256": "13deffdfd34539e23706b0fde235991da45b2f07c5c18dbbf3ca734c1da0c788"
+    },
+    {
+      "path": "src/presentation.ts",
+      "bytes": 16880,
+      "sha256": "2e729538403ef924430187df13ec5e140de95e0ea41a8225093dba644c1f2b6a"
+    },
+    {
+      "path": "src/ptc.ts",
+      "bytes": 33128,
+      "sha256": "c0dda3a17a5c70503b41779605fd323d81e5c571758eb3012086c971f8fabe09"
+    },
+    {
+      "path": "src/py-types.ts",
+      "bytes": 47527,
+      "sha256": "a9894e3555ad9767d4a4b2de30f6d4d717438f7abf686e07688298db51a96cef"
+    },
+    {
+      "path": "src/schema.ts",
+      "bytes": 25337,
+      "sha256": "be6e4b3fa18fe633c6c83ed4f9072da5a2a203f64bf0b70c9066fd58b0e2c897"
+    },
+    {
+      "path": "src/testing.ts",
+      "bytes": 1723,
+      "sha256": "8b7bf72750d885c1acb52e99ccac9e42542cc5efcb581098ad3507e83ca0a651"
+    },
+    {
+      "path": "src/ts-types.ts",
+      "bytes": 15001,
+      "sha256": "473562e67f2282579b2abb451acee759e2d2af681a051690c4980af4459016e1"
+    },
+    {
+      "path": "src/types.ts",
+      "bytes": 2533,
+      "sha256": "de80788a12dccc3a3f43129da6d46268774aabf09445e0a97383e23a83633116"
+    },
+    {
+      "path": "tsconfig.json",
+      "bytes": 725,
+      "sha256": "7122dbdc4ebd949207505b3e77cee84dd2303cdb6fe544f21f2b97cfa5efc321"
+    }
+  ],
+  "entryFamily": {
+    "lib/index.js": [
+      "aaba52bf5d0149355407642b3965c06977d1e9143f5c61bc19429abbe6a11c5d",
+      "83f49679b059d69a5cf2c73944d5c605565ecebe7fa027d03f235d3f9e052070"
+    ],
+    "lib/invariant.js": [
+      "41a09fa8d0e0857c6232e8d3b13c8658929b6b6300c6b3a2c53980c05309c282",
+      "c0a491d7ce719956766a4c52679a8ba0cea4bd7c8612e6302f32c8e0eee6af1a"
+    ]
+  }
+}

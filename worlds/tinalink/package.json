@@ -1,0 +1,11 @@
+{
+  "name": "cortico-world-tina-link",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "engines": { "node": ">=24" },
+  "main": "src/world.mjs",
+  "cortico": { "kind": "world", "api": 6, "displayName": "Tina 主从事件联络", "describe": "describe.json" },
+  "scripts": { "test": "node --test test/*.test.mjs" }
+}

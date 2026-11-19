@@ -1,0 +1,11 @@
+{
+  "name": "@tina/cortico-host-client",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./src/index.mjs",
+  "exports": { ".": "./src/index.mjs", "./client": "./lib/client.js", "./package.json": "./package.json" },
+  "files": ["src", "lib"],
+  "scripts": { "build": "node build.mjs" },
+  "dsh": { "client": { "inject": ["@deepseek-ai/dsh-client-ui-chat", "@deepseek-ai/dsh-client-ui-conversation", "@deepseek-ai/dsh-client-ui-primitives"], "external": ["react", "@deepseek-ai/dsh-client-ui-primitives"], "platform": "web" } },
+  "license": "MIT"
+}

@@ -1,0 +1,66 @@
+{
+  "schemaVersion": "canbot.audio-play-adapter.source.v1",
+  "upstreamTarSha256": "5084951ff068e709ca3fe9bb6b22a7e37ca2df136dfb41f581fbc92e376874c0",
+  "upstreamFiles": {
+    "CHANGELOG.md": "f17926a3b6fe86bbdc32cef97f5688d43b28fe6154ee81c2d922891649809179",
+    "describe.json": "2fcc749c0f0544a0edc429215c4ea44c9ee48d52986265772341004dca271045",
+    "dist/webui.js": "8753f14e180a9a92901e20e34098120512a1ef4708be3d264b50f8cf1d8e4866",
+    "LICENSE": "ae2cfb12283f945123c5450c66c08f65380392af1ea35ae05e37a47ff61f2a6c",
+    "package.json": "29b25ff66f723b81ca86917abf37cf7b0f4f94565ce37f412d5ccb58ac177615",
+    "README.md": "7d66fbd17e89dd91e196e533c33f5d0bb1f95ac333359359b93273d3f01bc178",
+    "src/config.js": "8e8037a700680b75f8b93d91a417b7b46775e39a503e297be1d80af91a5ffd9e",
+    "src/definition.js": "94973bdf1c5ba8d18d9de7af0774e5d91a9a027736c606c06f44603cd4dff56b",
+    "src/ENV_PROMPT.md": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "src/index.js": "9f8adfac49a874a464c9a90599c983206b69bc3265345eec59b355e2c453e597",
+    "src/play.ps1": "914394577154cbae449c8dd3da626cebedbe8ee8adc9adb80d7d6e6490399d0d",
+    "src/player.js": "6d9e1e1d8b8acc3adfd0d2a2ef8aea64a7b66f5d21575494ca918e4a9c586e43",
+    "src/world.js": "40b74e6c755805b369ef928bac1c2070021c6c3db9baff62abfc9deda73c24a0"
+  },
+  "adaptedFiles": {
+    "CANBOT-PATCH.md": "5a47e9d61cff977f6ceb1c799e557cbb10978f4c49b3e2603ab0321863610bf8",
+    "CHANGELOG.md": "b5f19346f6489440eaf5215b9dcac7ec111fe8f773470331b51cd9d3cc8a49ab",
+    "describe.json": "819b71fb07a83336d1b4c46fd7bfb7beee700ff248785c5b0bd36f93e4972839",
+    "dist/webui.js": "8753f14e180a9a92901e20e34098120512a1ef4708be3d264b50f8cf1d8e4866",
+    "LICENSE": "ae2cfb12283f945123c5450c66c08f65380392af1ea35ae05e37a47ff61f2a6c",
+    "package.json": "587d072e60e774919f6ddaecab27ace8d847ec5cb2bee656b6c70d9edbde0d67",
+    "PATCH.diff": "f210a9c67fbb878825cb5a123c1d9990553fd3c6c313c8910c5005ee9277316e",
+    "README.md": "8dffa4fe4002036de4cac6c3c85b9f5a9ebf0b252d4b74afb69feee79ad7300b",
+    "src/config.js": "8e8037a700680b75f8b93d91a417b7b46775e39a503e297be1d80af91a5ffd9e",
+    "src/definition.js": "55a6caa024e591265ee70b28d8c48421c9d13fcaa02c6ac6697f29b02919d71c",
+    "src/ENV_PROMPT.md": "727890ad567203a88bdc26f2c81f5ce2be681c78b776e462940196df401eeb4c",
+    "src/index.js": "9f8adfac49a874a464c9a90599c983206b69bc3265345eec59b355e2c453e597",
+    "src/play.ps1": "914394577154cbae449c8dd3da626cebedbe8ee8adc9adb80d7d6e6490399d0d",
+    "src/player.js": "3d58fe9a1d62b905f139ceb22e2198b060da0810fabff8c1b50cd15df2b41486",
+    "src/world.js": "f388261567b71970a4d554492399042f44e345053b897ff75719d012e324cba3",
+    "tests/canbot-cancellation.test.mjs": "403afd3a680631338e398dda04460375e39cbf44cdb4cc8c54e24dcacec3c0d0",
+    "tests/fixtures/fake-helper.mjs": "58c4ac266022225d7dd7902627e9959c293ff9d5a9d3552b752c25bbe483294f",
+    "UPSTREAM.json": "632b91271b9247d5c8c1bb55dfea2491c75837cc2f5cfb44b1c797cc3e68149d"
+  },
+  "changedUpstreamFiles": [
+    "CHANGELOG.md",
+    "describe.json",
+    "package.json",
+    "README.md",
+    "src/definition.js",
+    "src/ENV_PROMPT.md",
+    "src/player.js",
+    "src/world.js"
+  ],
+  "addedFiles": [
+    "CANBOT-PATCH.md",
+    "PATCH.diff",
+    "UPSTREAM.json",
+    "tests/canbot-cancellation.test.mjs",
+    "tests/fixtures/fake-helper.mjs"
+  ],
+  "localTests": {
+    "platform": "win32",
+    "tests": 8,
+    "passed": 7,
+    "failed": 0,
+    "skipped": 1,
+    "skipReason": "POSIX SIGTERM cannot be handled after Windows child.kill; requires Linux/macOS"
+  },
+  "deviceOperations": false,
+  "networkOperations": false
+}

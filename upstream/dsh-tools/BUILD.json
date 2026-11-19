@@ -1,0 +1,81 @@
+{
+  "format": 1,
+  "package": "@deepseek-ai/dsh-tools",
+  "version": "0.1.5-rc.2",
+  "sourceCapability": "hasContentFinalizer",
+  "baselineSha256": "aaba52bf5d0149355407642b3965c06977d1e9143f5c61bc19429abbe6a11c5d",
+  "compatibleInputSha256": [
+    "83f49679b059d69a5cf2c73944d5c605565ecebe7fa027d03f235d3f9e052070"
+  ],
+  "overlaySha256": "83f49679b059d69a5cf2c73944d5c605565ecebe7fa027d03f235d3f9e052070",
+  "entryFamily": {
+    "lib/index.js": [
+      "aaba52bf5d0149355407642b3965c06977d1e9143f5c61bc19429abbe6a11c5d",
+      "83f49679b059d69a5cf2c73944d5c605565ecebe7fa027d03f235d3f9e052070"
+    ],
+    "lib/invariant.js": [
+      "41a09fa8d0e0857c6232e8d3b13c8658929b6b6300c6b3a2c53980c05309c282",
+      "c0a491d7ce719956766a4c52679a8ba0cea4bd7c8612e6302f32c8e0eee6af1a"
+    ]
+  },
+  "payloadFiles": [
+    {
+      "path": "lib/index.js",
+      "sha256": "83f49679b059d69a5cf2c73944d5c605565ecebe7fa027d03f235d3f9e052070"
+    },
+    {
+      "path": "lib/index.js.map",
+      "sha256": "db4e7b034daef470df3144fc60b8c63814b74fec0f403e1fa997d8c15da4be81"
+    },
+    {
+      "path": "lib/invariant.js",
+      "sha256": "c0a491d7ce719956766a4c52679a8ba0cea4bd7c8612e6302f32c8e0eee6af1a"
+    },
+    {
+      "path": "lib/invariant.js.map",
+      "sha256": "83ea9a1ee7238891d2aec85d5a33de0687603a12625db9be6e28c93a83cff30b"
+    }
+  ],
+  "sourceFiles": [
+    {
+      "path": "index.ts",
+      "sha256": "66a007c877b8ace773bce0930211d0e50b25b031e1dd2fa3f0f5c1bf1649b0e4"
+    },
+    {
+      "path": "invariant.ts",
+      "sha256": "c954a0e1410718c6e9597e26eadb4329f121f11887ad319d1ec3add3a9de13a1"
+    },
+    {
+      "path": "json-schema.ts",
+      "sha256": "13deffdfd34539e23706b0fde235991da45b2f07c5c18dbbf3ca734c1da0c788"
+    },
+    {
+      "path": "presentation.ts",
+      "sha256": "2e729538403ef924430187df13ec5e140de95e0ea41a8225093dba644c1f2b6a"
+    },
+    {
+      "path": "ptc.ts",
+      "sha256": "267a568b45960f6593b567e7a21c11a570625f053a9c8a35c4361cc62794fa98"
+    },
+    {
+      "path": "py-types.ts",
+      "sha256": "a9894e3555ad9767d4a4b2de30f6d4d717438f7abf686e07688298db51a96cef"
+    },
+    {
+      "path": "schema.ts",
+      "sha256": "be6e4b3fa18fe633c6c83ed4f9072da5a2a203f64bf0b70c9066fd58b0e2c897"
+    },
+    {
+      "path": "testing.ts",
+      "sha256": "8b7bf72750d885c1acb52e99ccac9e42542cc5efcb581098ad3507e83ca0a651"
+    },
+    {
+      "path": "ts-types.ts",
+      "sha256": "473562e67f2282579b2abb451acee759e2d2af681a051690c4980af4459016e1"
+    },
+    {
+      "path": "types.ts",
+      "sha256": "de80788a12dccc3a3f43129da6d46268774aabf09445e0a97383e23a83633116"
+    }
+  ]
+}

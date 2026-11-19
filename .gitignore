@@ -1,0 +1,44 @@
+# 依赖与构建产物
+node_modules/
+upstream/*/node_modules/
+runtime/
+.install-cache/
+.tina-fusion-dev/
+/dist/
+*.tsbuildinfo
+
+# 运行状态与记忆数据
+state/
+deployment/
+self-mem/authority/
+self-mem/replica/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.jsonl
+*.zstd
+
+# 密钥与凭据
+.env
+.env.*
+!.env.example
+!.env.template
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+.credentials.yaml
+*.token
+
+# 日志与临时文件
+*.log
+*.tmp
+*.partial-*
+.DS_Store
+Thumbs.db
+
+# 本地备份
+backups/
+recovery/
+*.bak
+*.bak-*

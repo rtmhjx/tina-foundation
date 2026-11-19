@@ -1,0 +1,67 @@
+{
+  "format": 1,
+  "package": "@deepseek-ai/dsh-compaction-basic",
+  "version": "0.1.5-rc.2",
+  "kind": "source-built-overlay",
+  "upstream": "https://github.com/deepseek-ai/deepseek-harness",
+  "upstreamCommit": "fb2c4b9e698e30edb738bca4cf0618587db7d203",
+  "source": "upstream/dsh-compaction-basic",
+  "sourceTreeSha256": "1d85542190a58844ed253957e1e53a1a226a3a3e1404927c3bd696b90f23720b",
+  "files": [
+    {
+      "path": "BASELINE.json",
+      "bytes": 1104,
+      "sha256": "4e8271a33dfd9fd08b6d21b470535610232bbfeddd8003f223624e4706d7dd18"
+    },
+    {
+      "path": "OVERLAY-MANIFEST.json",
+      "bytes": 1695,
+      "sha256": "a0ab92eb004a03a05602aaca687cb09c203519bbeed550c16461a18f0ea62d77"
+    },
+    {
+      "path": "package.json",
+      "bytes": 2257,
+      "sha256": "36d679dc9136614fdd3b6b12e3b0c24348e9726c1b459c3a2d3c6be73a2a2d35"
+    },
+    {
+      "path": "src/config.ts",
+      "bytes": 11771,
+      "sha256": "d4d63fe3a6e7b3d00c91aafcba86cf5a9f5417739c406b26d87dac470f738681"
+    },
+    {
+      "path": "src/fusion-guard.ts",
+      "bytes": 7613,
+      "sha256": "a5c1a9338fb3dceeccd981edcb98d3bface3231d1bb52b66873891a6a74fbb9f"
+    },
+    {
+      "path": "src/index.ts",
+      "bytes": 27836,
+      "sha256": "492d8f80b0d9ea4363af290d25574caba38839272fc1c9712b39b41f4f194998"
+    },
+    {
+      "path": "src/region.ts",
+      "bytes": 25911,
+      "sha256": "0e2b1eb8ed02e5d879b82f8d5ed9c1a9265dce39267ee07a293c203a8f7965d2"
+    },
+    {
+      "path": "src/summarizer.ts",
+      "bytes": 11593,
+      "sha256": "96a2087600c6c3306ce16f6eb9006231da03499b852806c5961f80790138420f"
+    },
+    {
+      "path": "src/types.ts",
+      "bytes": 3268,
+      "sha256": "0b2c6dc3839bb43544b1dd9dbf678918578ff88ea00100eac1c0c2e7153ce0b4"
+    }
+  ],
+  "baselineLock": "upstream/dsh-compaction-basic/BASELINE.json",
+  "baselineLockSha256": "4e8271a33dfd9fd08b6d21b470535610232bbfeddd8003f223624e4706d7dd18",
+  "archive": "dsh-compaction-basic-0.1.5-rc.2-fusion-source.tgz",
+  "archiveSha256": "a69d4035e69f1eb8582108b87fd0dfd0b3c6b12f28ceecba23d1989029101d75",
+  "build": {
+    "node": "v24.19.0",
+    "script": "scripts/build-native-component.mjs",
+    "scriptSha256": "417abf45533607dfdab63d7058910c0d8138df7b571a930fdcd8ee9fbf8d2886",
+    "outputSha256": "bdfcbc74a2cbed9153ee7dc5339639d971dc3717fdb503435b3b5e4f436cf6f5"
+  }
+}

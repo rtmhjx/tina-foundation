@@ -1,0 +1,91 @@
+{
+  "format": 1,
+  "package": "@deepseek-ai/dsh-agent-loop",
+  "version": "0.1.5-rc.2",
+  "sourceCapability": "registerRequestHead",
+  "requestDeliveryVersion": 1,
+  "requestPlanningVersion": 1,
+  "baselineSha256": "49e32eb383c4d90b114508244463221787273f7edb66359906223adc296e35f0",
+  "compatibleInputSha256": [
+    "1090dc12555ff26e40c29bd7ea4f67f6c0bca6d78b998ea85783c76a847bf69c"
+  ],
+  "overlaySha256": "bf6800ac380890e9f2014105a51688ed8d3057f21a9ed013528a521d907e4b37",
+  "entryFamily": {
+    "lib/index.js": [
+      "49e32eb383c4d90b114508244463221787273f7edb66359906223adc296e35f0",
+      "1090dc12555ff26e40c29bd7ea4f67f6c0bca6d78b998ea85783c76a847bf69c"
+    ],
+    "lib/invariant.js": [
+      "c577dcdde278b761b5810d9a941131d423de40c22ff57f98a3982681ed3bf772",
+      "e482f2aafef2b0b6da25c4fb71144eb2fc0af292a232980cc4f17bbd4c09bb98"
+    ]
+  },
+  "payloadFiles": [
+    {
+      "path": "lib/chunks/chunk-VHAYSZPD.js",
+      "sha256": "d6d4a8a1f2a87a670fcaea7d52343f34f91e6174c9d67ec28eee83a7a0138489"
+    },
+    {
+      "path": "lib/chunks/chunk-VHAYSZPD.js.map",
+      "sha256": "a1726a4a0f47144a9db8616da58a28f5bbd5d1b0c18c8090f1a8261bd8176862"
+    },
+    {
+      "path": "lib/index.js",
+      "sha256": "bf6800ac380890e9f2014105a51688ed8d3057f21a9ed013528a521d907e4b37"
+    },
+    {
+      "path": "lib/index.js.map",
+      "sha256": "8fa5d7b545f7aaa0185a24be62b9a5913c161ea35ad2b783a986539afac75a74"
+    },
+    {
+      "path": "lib/invariant.js",
+      "sha256": "1f8500dbdfd2c0e4e2d8b0c41340e2809445a8e6d8178c86ad3de1f1130eb147"
+    },
+    {
+      "path": "lib/invariant.js.map",
+      "sha256": "378c3a5e65acaf83afff8629be23cc9f1a82e3bf0f82336d40752d9bf833d829"
+    }
+  ],
+  "sourceFiles": [
+    {
+      "path": "agent.ts",
+      "sha256": "d8c83130925bf6a2cc73305dfa9aa91ebd7a6a8e37822273279e1bf9ab84eb14"
+    },
+    {
+      "path": "assistant-stream.ts",
+      "sha256": "120d2bec5efeec2aa54bf0e4261a45282936272d610dbbab21eee36b902629de"
+    },
+    {
+      "path": "constants.ts",
+      "sha256": "435d31d3c8740f5ebaefa5c12f22d7cda8ea8c6d018e6fcda459161174ecc971"
+    },
+    {
+      "path": "inbox.ts",
+      "sha256": "1f9c14cfd91baafa043cc5c82a89f60ab236ab5d0c31d6f708344e7b7efa5d21"
+    },
+    {
+      "path": "index.ts",
+      "sha256": "5f0e822166de5ed18a8ee36f44a6b5623d1b30de079e5b2e81b2e594d03995bf"
+    },
+    {
+      "path": "invariant.ts",
+      "sha256": "8e61b334ff3b37373e5d9a08a6672b5cfb9f306d0d4c8eace102764e73c11b36"
+    },
+    {
+      "path": "request-head.ts",
+      "sha256": "125977c96922ccaa02b7334c7d09ec20845741ef1502011ddba83402bf60ebd0"
+    },
+    {
+      "path": "request-lifecycle.ts",
+      "sha256": "0f8b1921b38820757ec5a564bf424196359e37ec29c241f1df42d0f89a9d9f28"
+    },
+    {
+      "path": "runtime-context.ts",
+      "sha256": "e047c29437259df7f5d4fa9d7dfbfb5030b62aeea42e8da8607fbf4a58da2542"
+    },
+    {
+      "path": "tool-calls.ts",
+      "sha256": "1f8984127d4245b6a08c1e4b0c8b9d8fa7ce30ffcf08184187f16dc1bf57ae6d"
+    }
+  ]
+}

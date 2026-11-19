@@ -1,0 +1,97 @@
+{
+  "format": 1,
+  "package": "@deepseek-ai/dsh-agent-loop",
+  "version": "0.1.5-rc.2",
+  "kind": "source-built-overlay",
+  "upstream": "https://github.com/deepseek-ai/deepseek-harness",
+  "upstreamCommit": "fb2c4b9e698e30edb738bca4cf0618587db7d203",
+  "source": "upstream/dsh-agent-loop",
+  "sourceTreeSha256": "1615e5377482b9a6227e9818b4275f0e1f36791675fc81b53c6ef12474648880",
+  "files": [
+    {
+      "path": "BASELINE.json",
+      "bytes": 2922,
+      "sha256": "eb750cdbec79e78be8051068cd9e73d71e92e5d1218068020c4ff6cf0f866c03"
+    },
+    {
+      "path": "LICENSE",
+      "bytes": 1065,
+      "sha256": "ebb4f09972aee8608be255debaf78451a68e95c290f55c240dec2ecfa16ea6be"
+    },
+    {
+      "path": "package.json",
+      "bytes": 2231,
+      "sha256": "a5d17de0386e7007e95b2389616ae4795e65920f5e6d17e0cbea7b000cfd1d38"
+    },
+    {
+      "path": "README.md",
+      "bytes": 23300,
+      "sha256": "5c52eb6698e9a33a449c101608b6028a9f010cb94e64af0a9e236b5964bddc54"
+    },
+    {
+      "path": "src/agent.ts",
+      "bytes": 36363,
+      "sha256": "d8c83130925bf6a2cc73305dfa9aa91ebd7a6a8e37822273279e1bf9ab84eb14"
+    },
+    {
+      "path": "src/assistant-stream.ts",
+      "bytes": 4263,
+      "sha256": "120d2bec5efeec2aa54bf0e4261a45282936272d610dbbab21eee36b902629de"
+    },
+    {
+      "path": "src/constants.ts",
+      "bytes": 202,
+      "sha256": "435d31d3c8740f5ebaefa5c12f22d7cda8ea8c6d018e6fcda459161174ecc971"
+    },
+    {
+      "path": "src/inbox.ts",
+      "bytes": 9447,
+      "sha256": "1f9c14cfd91baafa043cc5c82a89f60ab236ab5d0c31d6f708344e7b7efa5d21"
+    },
+    {
+      "path": "src/index.ts",
+      "bytes": 41882,
+      "sha256": "5f0e822166de5ed18a8ee36f44a6b5623d1b30de079e5b2e81b2e594d03995bf"
+    },
+    {
+      "path": "src/invariant.ts",
+      "bytes": 3230,
+      "sha256": "8e61b334ff3b37373e5d9a08a6672b5cfb9f306d0d4c8eace102764e73c11b36"
+    },
+    {
+      "path": "src/request-head.ts",
+      "bytes": 13390,
+      "sha256": "125977c96922ccaa02b7334c7d09ec20845741ef1502011ddba83402bf60ebd0"
+    },
+    {
+      "path": "src/request-lifecycle.ts",
+      "bytes": 1759,
+      "sha256": "0f8b1921b38820757ec5a564bf424196359e37ec29c241f1df42d0f89a9d9f28"
+    },
+    {
+      "path": "src/runtime-context.ts",
+      "bytes": 6972,
+      "sha256": "e047c29437259df7f5d4fa9d7dfbfb5030b62aeea42e8da8607fbf4a58da2542"
+    },
+    {
+      "path": "src/tool-calls.ts",
+      "bytes": 11488,
+      "sha256": "1f8984127d4245b6a08c1e4b0c8b9d8fa7ce30ffcf08184187f16dc1bf57ae6d"
+    },
+    {
+      "path": "tsconfig.json",
+      "bytes": 725,
+      "sha256": "7122dbdc4ebd949207505b3e77cee84dd2303cdb6fe544f21f2b97cfa5efc321"
+    }
+  ],
+  "baselineLock": "upstream/dsh-agent-loop/BASELINE.json",
+  "baselineLockSha256": "eb750cdbec79e78be8051068cd9e73d71e92e5d1218068020c4ff6cf0f866c03",
+  "archive": "dsh-agent-loop-0.1.5-rc.2-fusion-source.tgz",
+  "archiveSha256": "395a825dadcda0712efd023e5b826ca53fbd2f9a9dbb389efdca364f43642314",
+  "build": {
+    "node": "v24.19.0",
+    "script": "scripts/build-native-component.mjs",
+    "scriptSha256": "a756287ac937d2f129fd497a64a623aa7b9768b804c1a316bcea30150aa04a39",
+    "outputSha256": "bf6800ac380890e9f2014105a51688ed8d3057f21a9ed013528a521d907e4b37"
+  }
+}

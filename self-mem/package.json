@@ -1,0 +1,35 @@
+﻿{
+    "name":  "@tina/self-mem",
+    "version":  "0.4.6-fusion.next.1",
+    "description":  "Tina continuous self-panorama (freeform TINA_SELF.md + cross-window lifecycle pulse) over SharedGitMem immutable originals.",
+    "type":  "module",
+    "main":  "./src/cortico-bot.mjs",
+    "bin":  {
+                "tina-self-mem-mcp":  "./src/mcp-server.mjs",
+                "tina-self-mem-http":  "./src/http-server.mjs",
+                "tina-self-mem-collect":  "./src/session-collector.mjs"
+            },
+    "exports":  {
+                    ".":  "./src/index.mjs",
+                    "./mcp":  "./src/mcp-server.mjs",
+                    "./http":  "./src/http-server.mjs",
+                    "./cortico":  "./src/cortico-adapter.mjs",
+                    "./bot":  "./src/cortico-bot.mjs",
+                    "./collector":  "./src/session-collector.mjs"
+                },
+    "engines":  {
+                    "node":  "\u003e=24.0.0"
+                },
+    "cortico":  {
+                    "kind":  "bot",
+                    "api":  7,
+                    "displayName":  "Tina Self-Mem"
+                },
+    "files":  [
+                  "src",
+                  "presets",
+                  "vendor",
+                  "README.md"
+              ],
+    "license":  "AGPL-3.0-or-later"
+}

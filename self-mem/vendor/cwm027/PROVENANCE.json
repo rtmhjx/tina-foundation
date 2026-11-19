@@ -1,0 +1,39 @@
+{
+  "package": "cortico-world-memory",
+  "version": "0.2.7",
+  "license": "MIT",
+  "repository": "https://github.com/hth768/cortico-world-memory",
+  "tarball": "https://registry.npmjs.org/cortico-world-memory/-/cortico-world-memory-0.2.7.tgz",
+  "tarballSha256": "6db20110ec9ef4d64baae98247202fab95fc768b8ebaa6e2f8506bb6f2cfa2d5",
+  "compiler": {
+    "name": "typescript",
+    "version": "5.9.3",
+    "target": "ES2022",
+    "module": "ES2022"
+  },
+  "changes": [
+    "TypeScript transpiled to ES2022 ESM; local imports rewritten from .ts to .mjs.",
+    "Added legacyIndex: idx to both public search result mappings. No tokenization, BM25, cosine, threshold, RRF or tie-breaking changes.",
+    "Supplied backend is read-only and in-memory; World and filesystem backend are never instantiated by the adapter."
+  ],
+  "files": [
+    {
+      "file": "backend.mjs",
+      "sourcePath": "src/backend.ts",
+      "sourceSha256": "dceac094fa6f08bcb75dad8171349f3b5947367919fba6abbb6c2e40bd180b95",
+      "generatedSha256": "d28a33c29fceaa40102073c06edad32098fa2b18281573d4b973c86a929082bf"
+    },
+    {
+      "file": "float16.mjs",
+      "sourcePath": "src/float16.ts",
+      "sourceSha256": "2a151e0c68bb1c6d44cb7db92aa099d3f3ba63622d55ea609589f80779f4b684",
+      "generatedSha256": "c56df950885e4880677296898a7ee82c5fa4bfdbfd0819b1bdded054e6936650"
+    },
+    {
+      "file": "vector-store.mjs",
+      "sourcePath": "src/vector-store.ts",
+      "sourceSha256": "10f25a5c1304324215b6b347cfd433a04a55efc1029cd828986dcbf1b5ffcae5",
+      "generatedSha256": "e2ebfbf1ccdf45c5312fdf0cd9070091d5845ec2958de94e24590c1a2e6b8d10"
+    }
+  ]
+}

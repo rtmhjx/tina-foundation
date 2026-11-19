@@ -1,0 +1,62 @@
+{
+  "name": "cortico-world-stt",
+  "version": "0.3.0",
+  "type": "module",
+  "description": "语音转文本（Speech to Text）—— 给 Coopanion 桌宠的 cortico World 扩展：把音频文件转写成文字，并记进可浏览的转写记录；也可以先回执后以事件送达，或监听事件里的音频自动转写。 / A cortico World extension that transcribes audio files to text through a configurable ASR API; results can arrive later as events, and it can transcribe audio carried by other events automatically. It is an agent tool, not a realtime microphone.",
+  "license": "MIT",
+  "author": {
+    "name": "AqualCross"
+  },
+  "homepage": "https://github.com/AqualCross/cortico-world-stt#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AqualCross/cortico-world-stt.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AqualCross/cortico-world-stt/issues"
+  },
+  "keywords": [
+    "cortico-world",
+    "cortico",
+    "coopanion",
+    "stt",
+    "asr",
+    "speech-to-text",
+    "speech-recognition",
+    "transcription",
+    "openai-compatible",
+    "whisper",
+    "qwen"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": [
+    "src",
+    "dist",
+    "describe.json",
+    "CHANGELOG.md",
+    "README.md"
+  ],
+  "scripts": {
+    "selfcheck": "node tools/check.mjs",
+    "prepublishOnly": "node tools/check.mjs"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "cortico": {
+    "kind": "world",
+    "api": 6,
+    "displayName": "语音转文本",
+    "tags": [
+      "voice"
+    ],
+    "webUiClient": "dist/webui.js",
+    "describe": "describe.json"
+  }
+}

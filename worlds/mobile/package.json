@@ -1,0 +1,21 @@
+{
+  "name": "cortico-world-tina-mobile",
+  "version": "0.1.1",
+  "private": true,
+  "type": "module",
+  "description": "Durable phone conversation and sourced fact feed for Cortico World API 6",
+  "license": "MIT",
+  "keywords": ["cortico-world", "android", "mobile", "tina"],
+  "engines": { "node": ">=24.0.0" },
+  "main": "./src/world.mjs",
+  "exports": "./src/world.mjs",
+  "cortico": {
+    "kind": "world",
+    "api": 6,
+    "displayName": "Tina 手机通道",
+    "describe": "describe.json",
+    "tags": ["apps", "experimental"]
+  },
+  "files": ["src", "examples", "ENV_PROMPT.md", "README.md", "LICENSE", "describe.json"],
+  "scripts": { "test": "node --test test/*.test.mjs", "check": "node --check src/world.mjs && node --check src/store.mjs" }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "cortico-world-tina-linux-tools",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/world.mjs",
+  "license": "MIT",
+  "os": ["linux"],
+  "engines": { "node": ">=22" },
+  "keywords": ["cortico-world", "linux"],
+  "cortico": {
+    "kind": "world", "api": 6,
+    "displayName": "Linux 自主工具",
+    "describe": "describe.json",
+    "tags": ["apps", "experimental", "unsafe"]
+  },
+  "scripts": { "test": "node --test test/world.test.mjs" }
+}

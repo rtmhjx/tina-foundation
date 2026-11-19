@@ -1,0 +1,133 @@
+{
+  "format": 1,
+  "kind": "read-only-source-copy-baseline",
+  "upstream": "https://github.com/deepseek-ai/deepseek-harness",
+  "upstreamCommit": "fb2c4b9e698e30edb738bca4cf0618587db7d203",
+  "source": "packages/core/agent-loop",
+  "originalSource": "F:\\AI\\探索\\deepseek-harness\\packages\\core\\agent-loop",
+  "sourceAlreadyDirty": true,
+  "note": "The pre-overlay checkout already contained the documented native cancellation-cause changes. This snapshot is the actual copied source, not a claim of a pristine upstream checkout.",
+  "sourceTreeSha256": "32502ae53898d3bb85683615dca38c6e2cec593f0090bc3f8b427bc81d388331",
+  "files": [
+    {
+      "path": "README.md",
+      "sha256": "ba1014a9f535de696b8eff276b2cb1bde82fc87a60485547a5213a3a6641e169",
+      "bytes": 20748
+    },
+    {
+      "path": "package.json",
+      "sha256": "a5d17de0386e7007e95b2389616ae4795e65920f5e6d17e0cbea7b000cfd1d38",
+      "bytes": 2231
+    },
+    {
+      "path": "src/agent.ts",
+      "sha256": "e378e235fd9d15404e3048f36dfc2f3f22672081a25216fa9d0d47bce8486fdb",
+      "bytes": 25359
+    },
+    {
+      "path": "src/assistant-stream.ts",
+      "sha256": "120d2bec5efeec2aa54bf0e4261a45282936272d610dbbab21eee36b902629de",
+      "bytes": 4263
+    },
+    {
+      "path": "src/constants.ts",
+      "sha256": "435d31d3c8740f5ebaefa5c12f22d7cda8ea8c6d018e6fcda459161174ecc971",
+      "bytes": 202
+    },
+    {
+      "path": "src/inbox.ts",
+      "sha256": "1f9c14cfd91baafa043cc5c82a89f60ab236ab5d0c31d6f708344e7b7efa5d21",
+      "bytes": 9447
+    },
+    {
+      "path": "src/index.ts",
+      "sha256": "a73a9477ede09567490f3885759dd92e3ed0992658d76d2a1b39c5ebc5a8dda4",
+      "bytes": 39436
+    },
+    {
+      "path": "src/invariant.ts",
+      "sha256": "db6d3d29d40392d2ab955607faf62933eaee5f2da7f519fd43de310d532b7a02",
+      "bytes": 3140
+    },
+    {
+      "path": "src/runtime-context.ts",
+      "sha256": "07b64148689d64860a18c8668bf9470140f200d32ea62ede6dfb7d0d58921a5c",
+      "bytes": 6926
+    },
+    {
+      "path": "src/tool-calls.ts",
+      "sha256": "1f8984127d4245b6a08c1e4b0c8b9d8fa7ce30ffcf08184187f16dc1bf57ae6d",
+      "bytes": 11488
+    },
+    {
+      "path": "tsconfig.json",
+      "sha256": "30613d0afa4772eb4a972986e787546b5da69a038cb9e9c7098c1e7bbc988489",
+      "bytes": 865
+    },
+    {
+      "path": "tsdown.config.ts",
+      "sha256": "6d284c7f7e842f0eb93b0bbef7eb1f558e30a59e2f9f347a8655137f6ec04ebb",
+      "bytes": 541
+    }
+  ],
+  "archive": "dsh-agent-loop-0.1.5-rc.2-baseline-source.tgz",
+  "archiveSha256": "021eeafee96b5c061e211789f9755ed554d98d63a5b90b2622d238e45b905b8d",
+  "baselineBuiltFiles": [
+    {
+      "path": "lib/index.js",
+      "sha256": "49e32eb383c4d90b114508244463221787273f7edb66359906223adc296e35f0"
+    },
+    {
+      "path": "lib/invariant.js",
+      "sha256": "c577dcdde278b761b5810d9a941131d423de40c22ff57f98a3982681ed3bf772"
+    },
+    {
+      "path": "lib/types/agent.d.ts",
+      "sha256": "66131a86c5f024fabb77e99103f3f07cdca5818cbce7d6aaecb058197c66589e"
+    },
+    {
+      "path": "lib/types/assistant-stream.d.ts",
+      "sha256": "e81ae829fe3f4cf470fd18c7dee019d0643c13b6df5a2b620698b62f1f809b8d"
+    },
+    {
+      "path": "lib/types/constants.d.ts",
+      "sha256": "e57529f7cc7e9e4200b8a6c2c4bd48a927872d490a5c40163d9ba34b1278b466"
+    },
+    {
+      "path": "lib/types/inbox.d.ts",
+      "sha256": "339b481ca3903606c65e6d844c3f3876e07d4003c81a9647343d7a153614a61d"
+    },
+    {
+      "path": "lib/types/index.d.ts",
+      "sha256": "445c285367317cc908455c9cd11a14dd002b641a4905a493ead5e8a8d3c3bdbd"
+    },
+    {
+      "path": "lib/types/invariant.d.ts",
+      "sha256": "adf6e9725c37cecf470745403026927d9bb2f341a94df9081d435e90e0a36165"
+    },
+    {
+      "path": "lib/types/runtime-context.d.ts",
+      "sha256": "19ce6acc05d1c9acac6b11dfacf221067fb30211df4c4e7a97edd096d2bec6dd"
+    },
+    {
+      "path": "lib/types/tool-calls.d.ts",
+      "sha256": "95b28859ddaffaebf984dc06d5d61b16234960f60f8761a8ff9d98a1f0859eae"
+    },
+    {
+      "path": "package.json",
+      "sha256": "a5d17de0386e7007e95b2389616ae4795e65920f5e6d17e0cbea7b000cfd1d38"
+    },
+    {
+      "path": "README.i18n.yaml",
+      "sha256": "0d8d6a79888c45a201ea4196feef5303b6db06339fae98d1ded435e369f502d7"
+    },
+    {
+      "path": "README.md",
+      "sha256": "ba1014a9f535de696b8eff276b2cb1bde82fc87a60485547a5213a3a6641e169"
+    },
+    {
+      "path": "README.zh.md",
+      "sha256": "f720f2babfee2a50c722c381f061e04af48e806d0302a53127a26310f91001ba"
+    }
+  ]
+}

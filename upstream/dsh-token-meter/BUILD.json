@@ -1,0 +1,270 @@
+{
+  "format": 1,
+  "package": "@deepseek-ai/dsh-token-meter",
+  "version": "0.1.5-rc.2",
+  "sourceCapability": "requestHeadAccountingVersion",
+  "requestHeadAccountingVersion": 1,
+  "baselineSha256": "f91bdd543a161cfbeec3450f44fc0ce310f5354b1be61d83dbce773d62ab011a",
+  "compatibleInputSha256": [],
+  "overlaySha256": "5a416acdec33a212441232e8f7521d8bfbf5e7ea2577d9d7de603a7c673d43e1",
+  "entryFamily": {
+    "lib/types/breakdown-projection.d.ts": [
+      "3623f8eee3816a16f83bf793302876619c2ca952cc0bfe452ef906fe3ded5130"
+    ],
+    "lib/types/breakdown-projection.js": [
+      "cb70c65e9550cfd88fac6d0b0da136dfd1a4daf56febb5a08bdaa7a316684125"
+    ],
+    "lib/types/client.d.ts": [
+      "b64a3bb8a1c2dfdae0457683aad657720c2dafd69c4e96fa79349f36e40218b9"
+    ],
+    "lib/types/client.js": [
+      "79f8481851ed25977ee6a89c855c2f88ee6975e880b5394b678e7e6473761bc8"
+    ],
+    "lib/types/estimate.d.ts": [
+      "8e0a8acd7edb1c5b8cd299f9b2e40aff02dca7a4c2784ce048ba178ec4879687"
+    ],
+    "lib/types/estimate.js": [
+      "306c6b5f4ea37a2acb1471eac3a5510c24ca745caac94c4fcac729118b43368c"
+    ],
+    "lib/types/index.d.ts": [
+      "23c9c226b748abbdeb96e849fe0dd7a37ec5bda473aa3d837227673cb69f224f"
+    ],
+    "lib/types/index.js": [
+      "7f0a316ed35bb6b936bf34aa816ae61483e82f52ffd5959f461ba00d48778be9"
+    ],
+    "lib/types/projection.d.ts": [
+      "4291b6e217f9523c19884f5a23cc59da387c1d02ec80770378c135ef9fa77d2d"
+    ],
+    "lib/types/projection.js": [
+      "cb8f44d6ae7581f69351f90d5245baca905aca5b06478b3786e906dd94c1e9be"
+    ],
+    "lib/types/route-pricing.d.ts": [
+      "44746978ddfe9c8b03ff5b17793d27b7ff3b4f61720d4a44f7c6e65770607fe3"
+    ],
+    "lib/types/route-pricing.js": [
+      "ee99f7e720b9caa2c03eaddfcd2d4d04928529dcb58a60caa5834a55d7ac2ecd"
+    ],
+    "lib/types/surface-fold.d.ts": [
+      "621df2ea45be3f5d94525df7697d0c96993e51906a0ae85842c8d63a7b402650"
+    ],
+    "lib/types/surface-fold.js": [
+      "12f027fd06625a4df0e71100c6d362aae6fabfa03ef00f5b125b05aa2bbe6700"
+    ],
+    "lib/types/surface-projection.d.ts": [
+      "2de9870e411dd9f4b17dee9b9e40e2399252a9c4ab56a313448bb1fcdc69c89a"
+    ],
+    "lib/types/surface-projection.js": [
+      "a921a3136e24f0169ba7cf67c841c57b1433f531eb19505110a44b9fcb2428b3"
+    ],
+    "lib/types/turn-usage.d.ts": [
+      "ce3b4543b86f231ad1255e738780b372995c0bec1f4f7626a180881117abc0d4"
+    ],
+    "lib/types/turn-usage.js": [
+      "6cee2c03747d47abdc191568a445efe128a85a1b06f86c8be7a9d55b94d3d9b8"
+    ],
+    "lib/types/types.d.ts": [
+      "6494bb40296e0b7b7cc4e44511b8a7abb8ee0f9d4634fe28e1a7452fcc539d29"
+    ],
+    "lib/types/types.js": [
+      "942e21682aea77b266bc4f6b4aed77495d5c1f4f11aef9bee6c899964ba3686e"
+    ],
+    "lib/types/usage-projection.d.ts": [
+      "0dfc376c4fbc3b62b25bdb2d64506f2545c37b2d08c3c62f48ba767509f92a0b"
+    ],
+    "lib/types/usage-projection.js": [
+      "4178acfae4457461a49edfab627d6ac9e3173dc91c165d803292108789ac65f2"
+    ]
+  },
+  "payloadFiles": [
+    {
+      "path": "lib/index.js",
+      "sha256": "5a416acdec33a212441232e8f7521d8bfbf5e7ea2577d9d7de603a7c673d43e1"
+    },
+    {
+      "path": "lib/types/breakdown-projection.d.ts",
+      "sha256": "3623f8eee3816a16f83bf793302876619c2ca952cc0bfe452ef906fe3ded5130"
+    },
+    {
+      "path": "lib/types/breakdown-projection.js",
+      "sha256": "cb70c65e9550cfd88fac6d0b0da136dfd1a4daf56febb5a08bdaa7a316684125"
+    },
+    {
+      "path": "lib/types/client.d.ts",
+      "sha256": "b64a3bb8a1c2dfdae0457683aad657720c2dafd69c4e96fa79349f36e40218b9"
+    },
+    {
+      "path": "lib/types/client.js",
+      "sha256": "79f8481851ed25977ee6a89c855c2f88ee6975e880b5394b678e7e6473761bc8"
+    },
+    {
+      "path": "lib/types/estimate.d.ts",
+      "sha256": "8e0a8acd7edb1c5b8cd299f9b2e40aff02dca7a4c2784ce048ba178ec4879687"
+    },
+    {
+      "path": "lib/types/estimate.js",
+      "sha256": "306c6b5f4ea37a2acb1471eac3a5510c24ca745caac94c4fcac729118b43368c"
+    },
+    {
+      "path": "lib/types/index.d.ts",
+      "sha256": "4d52cd55948ddb98d5ee2008083e7049ae0630e31a2ed4d2a4b7178ba12fe1be"
+    },
+    {
+      "path": "lib/types/index.js",
+      "sha256": "daf139f780bdbf8e118fcad51f257678bec05b978c0661d227fe7880b00880de"
+    },
+    {
+      "path": "lib/types/pressure-usage.js",
+      "sha256": "e8b76d63e39cdbeab416ea212eb5f99e821b28e2a84f856120657007f62d309b"
+    },
+    {
+      "path": "lib/types/projection.d.ts",
+      "sha256": "4291b6e217f9523c19884f5a23cc59da387c1d02ec80770378c135ef9fa77d2d"
+    },
+    {
+      "path": "lib/types/projection.js",
+      "sha256": "cb8f44d6ae7581f69351f90d5245baca905aca5b06478b3786e906dd94c1e9be"
+    },
+    {
+      "path": "lib/types/route-pricing.d.ts",
+      "sha256": "44746978ddfe9c8b03ff5b17793d27b7ff3b4f61720d4a44f7c6e65770607fe3"
+    },
+    {
+      "path": "lib/types/route-pricing.js",
+      "sha256": "ee99f7e720b9caa2c03eaddfcd2d4d04928529dcb58a60caa5834a55d7ac2ecd"
+    },
+    {
+      "path": "lib/types/surface-fold.d.ts",
+      "sha256": "621df2ea45be3f5d94525df7697d0c96993e51906a0ae85842c8d63a7b402650"
+    },
+    {
+      "path": "lib/types/surface-fold.js",
+      "sha256": "12f027fd06625a4df0e71100c6d362aae6fabfa03ef00f5b125b05aa2bbe6700"
+    },
+    {
+      "path": "lib/types/surface-projection.d.ts",
+      "sha256": "2de9870e411dd9f4b17dee9b9e40e2399252a9c4ab56a313448bb1fcdc69c89a"
+    },
+    {
+      "path": "lib/types/surface-projection.js",
+      "sha256": "a921a3136e24f0169ba7cf67c841c57b1433f531eb19505110a44b9fcb2428b3"
+    },
+    {
+      "path": "lib/types/turn-usage.d.ts",
+      "sha256": "ce3b4543b86f231ad1255e738780b372995c0bec1f4f7626a180881117abc0d4"
+    },
+    {
+      "path": "lib/types/turn-usage.js",
+      "sha256": "6cee2c03747d47abdc191568a445efe128a85a1b06f86c8be7a9d55b94d3d9b8"
+    },
+    {
+      "path": "lib/types/types.d.ts",
+      "sha256": "c8a54b859f78c660720e4c241a33c2b0cf16ae3814a6de336d8c9d78823146dd"
+    },
+    {
+      "path": "lib/types/types.js",
+      "sha256": "942e21682aea77b266bc4f6b4aed77495d5c1f4f11aef9bee6c899964ba3686e"
+    },
+    {
+      "path": "lib/types/usage-projection.d.ts",
+      "sha256": "0dfc376c4fbc3b62b25bdb2d64506f2545c37b2d08c3c62f48ba767509f92a0b"
+    },
+    {
+      "path": "lib/types/usage-projection.js",
+      "sha256": "610951e4472ffd0d5f86f8b0522a1d1e74a019fd974e59c565a36566121d6c07"
+    }
+  ],
+  "sourceFiles": [
+    {
+      "path": "breakdown-projection.d.ts",
+      "sha256": "3623f8eee3816a16f83bf793302876619c2ca952cc0bfe452ef906fe3ded5130"
+    },
+    {
+      "path": "breakdown-projection.js",
+      "sha256": "cb70c65e9550cfd88fac6d0b0da136dfd1a4daf56febb5a08bdaa7a316684125"
+    },
+    {
+      "path": "client.d.ts",
+      "sha256": "b64a3bb8a1c2dfdae0457683aad657720c2dafd69c4e96fa79349f36e40218b9"
+    },
+    {
+      "path": "client.js",
+      "sha256": "79f8481851ed25977ee6a89c855c2f88ee6975e880b5394b678e7e6473761bc8"
+    },
+    {
+      "path": "estimate.d.ts",
+      "sha256": "8e0a8acd7edb1c5b8cd299f9b2e40aff02dca7a4c2784ce048ba178ec4879687"
+    },
+    {
+      "path": "estimate.js",
+      "sha256": "306c6b5f4ea37a2acb1471eac3a5510c24ca745caac94c4fcac729118b43368c"
+    },
+    {
+      "path": "index.d.ts",
+      "sha256": "4d52cd55948ddb98d5ee2008083e7049ae0630e31a2ed4d2a4b7178ba12fe1be"
+    },
+    {
+      "path": "index.js",
+      "sha256": "daf139f780bdbf8e118fcad51f257678bec05b978c0661d227fe7880b00880de"
+    },
+    {
+      "path": "pressure-usage.js",
+      "sha256": "e8b76d63e39cdbeab416ea212eb5f99e821b28e2a84f856120657007f62d309b"
+    },
+    {
+      "path": "projection.d.ts",
+      "sha256": "4291b6e217f9523c19884f5a23cc59da387c1d02ec80770378c135ef9fa77d2d"
+    },
+    {
+      "path": "projection.js",
+      "sha256": "cb8f44d6ae7581f69351f90d5245baca905aca5b06478b3786e906dd94c1e9be"
+    },
+    {
+      "path": "route-pricing.d.ts",
+      "sha256": "44746978ddfe9c8b03ff5b17793d27b7ff3b4f61720d4a44f7c6e65770607fe3"
+    },
+    {
+      "path": "route-pricing.js",
+      "sha256": "ee99f7e720b9caa2c03eaddfcd2d4d04928529dcb58a60caa5834a55d7ac2ecd"
+    },
+    {
+      "path": "surface-fold.d.ts",
+      "sha256": "621df2ea45be3f5d94525df7697d0c96993e51906a0ae85842c8d63a7b402650"
+    },
+    {
+      "path": "surface-fold.js",
+      "sha256": "12f027fd06625a4df0e71100c6d362aae6fabfa03ef00f5b125b05aa2bbe6700"
+    },
+    {
+      "path": "surface-projection.d.ts",
+      "sha256": "2de9870e411dd9f4b17dee9b9e40e2399252a9c4ab56a313448bb1fcdc69c89a"
+    },
+    {
+      "path": "surface-projection.js",
+      "sha256": "a921a3136e24f0169ba7cf67c841c57b1433f531eb19505110a44b9fcb2428b3"
+    },
+    {
+      "path": "turn-usage.d.ts",
+      "sha256": "ce3b4543b86f231ad1255e738780b372995c0bec1f4f7626a180881117abc0d4"
+    },
+    {
+      "path": "turn-usage.js",
+      "sha256": "6cee2c03747d47abdc191568a445efe128a85a1b06f86c8be7a9d55b94d3d9b8"
+    },
+    {
+      "path": "types.d.ts",
+      "sha256": "c8a54b859f78c660720e4c241a33c2b0cf16ae3814a6de336d8c9d78823146dd"
+    },
+    {
+      "path": "types.js",
+      "sha256": "942e21682aea77b266bc4f6b4aed77495d5c1f4f11aef9bee6c899964ba3686e"
+    },
+    {
+      "path": "usage-projection.d.ts",
+      "sha256": "0dfc376c4fbc3b62b25bdb2d64506f2545c37b2d08c3c62f48ba767509f92a0b"
+    },
+    {
+      "path": "usage-projection.js",
+      "sha256": "610951e4472ffd0d5f86f8b0522a1d1e74a019fd974e59c565a36566121d6c07"
+    }
+  ]
+}

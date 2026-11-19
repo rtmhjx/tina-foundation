@@ -1,0 +1,14 @@
+{
+  "name": "cortico-world-tts",
+  "version": "0.1.4",
+  "gitHead": "425dd5b66c2c86743b69dfce12408e19ad896f8b",
+  "repository": {
+    "url": "git+https://github.com/AqualCross/cortico-world-tts.git",
+    "type": "git"
+  },
+  "integrity": "sha512-2+F4ogdTGhnmsYP9DWC0QQqk/T9HyAqwLXnk0YQ8yM4w40RBs2awUUcc5pgjtS8UdKUQgm7CoDfvJowyBKwfjg==",
+  "tarSha256": "10daf87d9d780e18d286d4b1e55392e4654cc35ed2510f96ced2b1337811dbb7",
+  "api": 6,
+  "license": "MIT",
+  "dependencies": {}
+}

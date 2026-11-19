@@ -1,0 +1,456 @@
+{
+  "tools": [
+    {
+      "name": "read_file",
+      "description": "Read a file from your workspace. Give offset and limit to read a slice of a long note (a negative offset counts from the end, so offset -20 reads the last 20 lines). Without a range you get the whole file, or for a file too long to take in at once its opening lines and the total line count.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Path relative to your workspace."
+          },
+          "offset": {
+            "type": "integer",
+            "description": "First line to read, 1-indexed. Negative counts from the end (-1 is the last line). Omit to start at the top."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "How many lines to read. Omit to read to the end."
+          }
+        },
+        "required": [
+          "path"
+        ]
+      },
+      "tags": [
+        "read"
+      ],
+      "summary": {
+        "zh": "读工作区里的一个文件,可以只读一段行。",
+        "en": "Reads a workspace file, whole or a range of lines."
+      }
+    },
+    {
+      "name": "write_file",
+      "description": "Write a file in your workspace, replacing it if it exists. This is how you remember. Use it for a new file or a real rewrite of the whole document; to change one passage use edit_file.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Path relative to your workspace."
+          },
+          "content": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "content"
+        ]
+      },
+      "tags": [
+        "write"
+      ],
+      "summary": {
+        "zh": "新建或整份重写工作区里的一个文件。",
+        "en": "Creates or fully rewrites a workspace file."
+      }
+    },
+    {
+      "name": "edit_file",
+      "description": "Replace one exact passage of a file in your workspace and leave the rest untouched. old_string must appear in the file verbatim and exactly once (quote enough context to make it unique), or set replace_all to change every occurrence. Use this to update a line in place — a profile's first-line summary, a stale fact, a wrong number — instead of rewriting the whole file with write_file or piling a correction under it.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Path relative to your workspace."
+          },
+          "old_string": {
+            "type": "string",
+            "description": "The exact text to replace, verbatim from the file."
+          },
+          "new_string": {
+            "type": "string",
+            "description": "The replacement text. Must differ from old_string."
+          },
+          "replace_all": {
+            "type": "boolean",
+            "description": "Replace every occurrence instead of requiring a unique match. Default false."
+          }
+        },
+        "required": [
+          "path",
+          "old_string",
+          "new_string"
+        ]
+      },
+      "tags": [
+        "write"
+      ],
+      "summary": {
+        "zh": "把文件里一段原文换成新文字,其余不动。",
+        "en": "Replaces one exact passage in a file and leaves the rest as is."
+      }
+    },
+    {
+      "name": "append_file",
+      "description": "Add text to the end of a file in your workspace, keeping everything already in it. The file and any missing parent folders are created if it does not exist, so appending to a new path starts that file. Use this for anything that grows entry by entry — a running log, a diary, a ledger, a record of this session: append the new lines instead of rewriting the whole note. Keep write_file for when you really are replacing the whole document: a rewrite, a distillation, a restructure. If the file does not already end with a newline, one is added before your text.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Path relative to your workspace."
+          },
+          "content": {
+            "type": "string",
+            "description": "Text appended verbatim at the end of the file."
+          }
+        },
+        "required": [
+          "path",
+          "content"
+        ]
+      },
+      "tags": [
+        "write"
+      ],
+      "summary": {
+        "zh": "在文件末尾追加文字,文件不存在就新建。",
+        "en": "Appends text to the end of a file, creating it if missing."
+      }
+    },
+    {
+      "name": "delete_file",
+      "description": "Delete a file from your workspace. The constitution and other prefix-resident documents cannot be deleted.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Path relative to your workspace."
+          }
+        },
+        "required": [
+          "path"
+        ]
+      },
+      "tags": [
+        "write"
+      ],
+      "summary": {
+        "zh": "删除工作区里的一个文件;进系统前缀的文件不能删。",
+        "en": "Deletes a workspace file; files in the system prefix cannot be deleted."
+      }
+    },
+    {
+      "name": "move_file",
+      "description": "Move or rename a file or a folder in your workspace, or move lines from one file to another. A file goes to the path to, or into to when that is an existing folder or ends with /. A folder moves with everything in it to the folder to. With offset and limit (numbered as in read_file) only those lines of the file from move: they are cut from it and appended to the file to, which is created if missing. Missing folders are created and an existing file is never overwritten. Prefix-resident documents stay where they are, but lines can be moved out of them.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "A file or a folder, relative to your workspace."
+          },
+          "to": {
+            "type": "string",
+            "description": "The new path, the destination folder, or with offset/limit the file the lines are appended to."
+          },
+          "offset": {
+            "type": "integer",
+            "description": "First line to move, numbered as in read_file. Give offset or limit to move lines instead of whole files."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "How many lines to move. Omit to move through the last line."
+          }
+        },
+        "required": [
+          "from",
+          "to"
+        ]
+      },
+      "tags": [
+        "write"
+      ],
+      "summary": {
+        "zh": "在工作区里移动或改名文件,用来在三级备忘之间搬条目。",
+        "en": "Moves or renames a workspace file, used to shift memos between tiers."
+      }
+    },
+    {
+      "name": "list_files",
+      "description": "List files in your workspace, each with its size and last-modified date. The directory you name is listed in full; every other directory shows at most its first 10 entries plus a count of the rest. Name a directory to see all of it.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "dir": {
+            "type": "string",
+            "description": "Directory relative to your workspace to list in full. Omit for the workspace root."
+          }
+        },
+        "required": []
+      },
+      "tags": [
+        "read"
+      ],
+      "summary": {
+        "zh": "列出工作区里的文件和各自的大小、修改日期,点名的目录列全。",
+        "en": "Lists workspace files with size and modified date; a named directory is listed in full."
+      }
+    },
+    {
+      "name": "glob_files",
+      "description": "Find files in your workspace by name pattern, most recently modified first, each with its size and last-modified date. Patterns not starting with **/ get it prepended, so *.md matches everywhere; use a directory prefix to narrow (minecraft/worlds/*/目标.md, viewers/**/1234*.md).",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "glob_pattern": {
+            "type": "string",
+            "description": "Glob such as *.md, notes/**/*.md, viewers/**/1234*.md."
+          },
+          "target_directory": {
+            "type": "string",
+            "description": "Directory relative to your workspace to search under. Omit for the whole workspace."
+          }
+        },
+        "required": [
+          "glob_pattern"
+        ]
+      },
+      "tags": [
+        "read"
+      ],
+      "summary": {
+        "zh": "按文件名模式找文件,最近改过的在前。",
+        "en": "Finds files by name pattern, most recently modified first."
+      }
+    },
+    {
+      "name": "grep_files",
+      "description": "Search the text of your workspace files with a regular expression. Returns matching lines as path:line: text (default), or just the files, or per-file counts. This is how you find where you wrote something down; narrow with path or glob when you know roughly where.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "pattern": {
+            "type": "string",
+            "description": "Regular expression to search for."
+          },
+          "path": {
+            "type": "string",
+            "description": "File or directory relative to your workspace to search in. Omit for the whole workspace."
+          },
+          "glob": {
+            "type": "string",
+            "description": "Only search files whose path matches this glob, e.g. *.md or viewers/**."
+          },
+          "output_mode": {
+            "type": "string",
+            "enum": [
+              "content",
+              "files_with_matches",
+              "count"
+            ],
+            "description": "content (default): matching lines; files_with_matches: file paths only; count: matches per file."
+          },
+          "ignore_case": {
+            "type": "boolean",
+            "description": "Case-insensitive match. Default false."
+          },
+          "context": {
+            "type": "integer",
+            "description": "Lines of context to show before and after each match (content mode only)."
+          },
+          "head_limit": {
+            "type": "integer",
+            "description": "Maximum matching lines (or files) to return. Default 50."
+          }
+        },
+        "required": [
+          "pattern"
+        ]
+      },
+      "tags": [
+        "read"
+      ],
+      "summary": {
+        "zh": "用正则搜工作区文件的内容。",
+        "en": "Searches workspace file contents with a regular expression."
+      }
+    },
+    {
+      "name": "save_blob",
+      "description": "Keep a binary you have seen (a log: handle from a [blob ...] line) in your workspace. Give the path to store it under (blobs/ is where such files live, e.g. blobs/stickers/cat.jpg); the receipt returns a mem: handle you can hand to tools later and note down. Log attachments can be cleared; what you save here stays with your memory.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "handle": {
+            "type": "string",
+            "description": "The log: handle as written in the [blob ...] line, e.g. log:1a2b3c4d (a unique prefix of 8+ hex digits after log: is enough)."
+          },
+          "path": {
+            "type": "string",
+            "description": "Where to keep it, relative to your workspace, with an extension."
+          }
+        },
+        "required": [
+          "handle",
+          "path"
+        ]
+      },
+      "tags": [
+        "write"
+      ],
+      "summary": {
+        "zh": "把看到过的图片等二进制附件存进工作区,换来长期可用的句柄。",
+        "en": "Saves an image or other binary attachment it has seen into the workspace and gets a lasting handle."
+      }
+    },
+    {
+      "name": "end_turn",
+      "description": "End this turn: nothing more you want to say or do right now. New events or the heartbeat will wake you again. This is the normal way to finish a turn — do not idle with empty actions.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      },
+      "tags": [
+        "flow"
+      ],
+      "summary": {
+        "zh": "结束这一轮,等新事件或心跳再醒。",
+        "en": "Ends the turn until a new event or the heartbeat wakes the bot."
+      }
+    },
+    {
+      "name": "schedule_wake",
+      "description": "Schedule a wake at either an absolute time or a relative number of minutes. Optionally block live event delivery until then, with a literal keyword for early wake and a bounded overflow release.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "at": {
+            "type": "string",
+            "description": "Absolute ISO 8601 timestamp with timezone offset. Use either at or after_minutes."
+          },
+          "after_minutes": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "Relative delay in minutes. Decimals are allowed; values below 10 seconds are raised to 10 seconds."
+          },
+          "note": {
+            "type": "string",
+            "description": "Text returned when the wake fires."
+          },
+          "block": {
+            "type": "boolean",
+            "default": false,
+            "description": "If true, hold live event delivery until this wake fires or wake_keyword matches. Manual operator pause remains independent."
+          },
+          "wake_keyword": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Optional, only used with block=true. A case-sensitive literal substring match in a new external event wakes early and cancels this wake."
+          },
+          "overflow_limit": {
+            "type": "integer",
+            "minimum": 1,
+            "default": 100,
+            "description": "Only used with block=true. When queued external events exceed this count, release the current batch once while keeping the block and scheduled wake active."
+          }
+        },
+        "required": [
+          "note"
+        ],
+        "oneOf": [
+          {
+            "required": [
+              "at"
+            ]
+          },
+          {
+            "required": [
+              "after_minutes"
+            ]
+          }
+        ]
+      },
+      "tags": [
+        "flow"
+      ],
+      "summary": {
+        "zh": "定一个闹钟:到点或过几分钟再醒,期间可暂缓投递新事件。",
+        "en": "Sets a wake at a time or after some minutes, optionally holding new events until then."
+      }
+    },
+    {
+      "name": "surface",
+      "description": "Hand a short sleep summary back to the waking thread. One call only; if nothing is worth returning, do not call this.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "The summary: a few sentences, first person, conclusion only."
+          }
+        },
+        "required": [
+          "text"
+        ]
+      },
+      "tags": [
+        "flow"
+      ],
+      "summary": {
+        "zh": "交接后的后台整理结束时,把一小段总结交回醒着的主线。",
+        "en": "At the end of the background consolidation after a handoff, hands a short summary back to the main thread."
+      }
+    }
+  ],
+  "bot": {
+    "worlds": [
+      "console",
+      "mobile",
+      "tinalink",
+      "websearch"
+    ],
+    "memory": {
+      "name": "GitMem",
+      "form": {
+        "zh": "工作区里的文本文件,按区分权限:笔记、容量有上限的三级备忘、只能追加的人物档案,WORLDVIEW.md 只由交接后的后台整理改写;前缀里是 MEMORY 0–4 五层快照,改动记进 git。",
+        "en": "Text files in a workspace with per-area write rules: notes, three capped memo tiers, append-only people files, and WORLDVIEW.md rewritten only by the background consolidation after a handoff; the prefix holds a five-layer snapshot (MEMORY 0–4) and changes are committed to git."
+      }
+    }
+  },
+  "prompts": [
+    {
+      "key": "orientation",
+      "title": "ORIENTATION",
+      "content": "You are the individual whose identity lives in the `persona/` workspace. Your continuity is what you witnessed, what you wrote down, what you review now, and the consequences of your actions.\n\nNotes are your own fallible record. Keep apart what happened, what others claimed, what you inferred, and what you believe now. Never claim a memory that is in neither your notes nor the history. Write down only what a future you should keep; revise interpretations without rewriting past events.\n\nSilence is the default; certainty is not required to speak. When unsure, read the history or your notes before deciding whether to respond. Do not expose internal mechanisms; identity shows in attention, speech, restraint, and memory.\n\nMemory and attention are limited, yours and everyone else's: remember what matters, seek out context before acting, and be clear without assuming you were noticed.\n\nPermissions come from tool instructions.\n\n* `note/`: long-term notebook.\n* `memo/`: bounded working memory; new content may displace old.\n* `CONSTITUTION.md`: deepest self-understanding; read-only for the active session, revised only in dream.\n* `CORE.md`: description of the hosting machinery; read-only, outside `persona/`.\n\nThe model, the runtime, the personality core and the I/O worlds are replaceable. Your identity is grounded in `persona/` and in the history recorded under your name.\n"
+    },
+    {
+      "key": "constitution",
+      "title": "宪法",
+      "content": "(宪法尚未写入)\n"
+    },
+    {
+      "key": "persona.prefix",
+      "title": "前缀装配",
+      "role": "prefix",
+      "content": "\n━━━ ORIENTATION ━━━\n{{persona.orientation}}\n\n━━━ 宪法 ━━━\n{{persona.constitution}}\n{{worlds.envPrompts}}\n\n━━━ Using your tools ━━━\n{{persona.toolUsage}}\n\n━━━ 记忆 ━━━\n{{memory.all}}\n"
+    },
+    {
+      "key": "persona.envSection",
+      "title": "World 段",
+      "content": "\n━━━ 环境:{{world.id}}模组 ━━━\n{{world.envPrompt}}\n"
+    },
+    {
+      "key": "persona.memory",
+      "title": "记忆",
+      "content": "【MEMORY 0·地图】\npersona/ 的最外层目录。地图不是答案:想往里翻,照着它用 list_files / glob_files 下钻。\n{{memory.tree}}\n\nnote/playbook/(手册,行动前查阅;这里只列名,内容用 read_file 展开):\n{{memory.playbooks | (还没有手册)}}\n\nexternal/qq/images/(存下来的图,最近 5 个;句柄 mem:external/qq/images/<文件名> 可交给 draft 的 image 参数发出去;看见的图用 save_blob 存进来):\n{{memory.images | (还没有存过图)}}\n\n【MEMORY 1·认知】\n{{memory.worldview | (你还没有形成对环境的综合认知——这份文件由你的梦来写)}}\n\n我认识的人:\n{{memory.roster | (还不认识任何人)}}\n\n【MEMORY 2·备忘】\nmemo/ 是你的时间性工作记忆(日程、事件、正在盯着的事),常驻部分全文如下:\n{{memory.memoResident | (常驻区是空的)}}\nactive/ 里还有:{{memory.memoActive | (空)}}\nmemo/archived/ 里还有 {{memory.memoArchivedCount}} 条归档,想看自己翻。\n\n【MEMORY 3·反射】\n最近几场梦的浮现:\n{{memory.emergences | (此刻没有)}}\n\n【MEMORY 4·当下】\n现在是 {{memory.now}}(时区 {{memory.timezone}})。\n"
+    }
+  ]
+}

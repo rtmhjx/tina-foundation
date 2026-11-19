@@ -1,0 +1,31 @@
+{
+  "format": 1,
+  "package": "@deepseek-ai/dsh-compaction-basic",
+  "version": "0.1.5-rc.2",
+  "sourceOrigin": "F:\\AI\\探索\\deepseek-harness\\packages\\compaction\\compaction-basic\\src",
+  "runtimeBaseline": "runtime/dsh-0.1.5-rc.2/node_modules/@deepseek-ai/dsh-compaction-basic",
+  "runtimeBaselineSha256": "169bc0785d80a10e4d8d43f11a34a15174b60d194ca13bd702b2b139edc44e78",
+  "sourceCapability": "registerFusionCompactionCoordinator",
+  "sourceFiles": [
+    {
+      "path": "src/config.ts",
+      "sha256": "d4d63fe3a6e7b3d00c91aafcba86cf5a9f5417739c406b26d87dac470f738681"
+    },
+    {
+      "path": "src/index.ts",
+      "sha256": "f824fc6f586c6ec7ae26442656d789accd0b5124924886e91b480bc587b1491d"
+    },
+    {
+      "path": "src/region.ts",
+      "sha256": "df672f3c4467e024fd710adec52a69491ce383b083e95d5733ae16a959cf930f"
+    },
+    {
+      "path": "src/summarizer.ts",
+      "sha256": "fcf7fd42d1ea9b90fe259438431590abfb85a8a352f1fbc10b92d4dfcaf797bc"
+    },
+    {
+      "path": "src/types.ts",
+      "sha256": "0b2c6dc3839bb43544b1dd9dbf678918578ff88ea00100eac1c0c2e7153ce0b4"
+    }
+  ]
+}

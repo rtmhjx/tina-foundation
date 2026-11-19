@@ -1,0 +1,217 @@
+{
+  "format": 1,
+  "package": "@deepseek-ai/dsh-api-session-controller",
+  "version": "0.1.5-rc.2",
+  "kind": "source-built-overlay",
+  "upstream": "https://github.com/deepseek-ai/deepseek-harness",
+  "upstreamCommit": "fb2c4b9e698e30edb738bca4cf0618587db7d203",
+  "source": "upstream/dsh-session-controller",
+  "sourceTreeSha256": "fae7f780d2ac75e70782c31d2f7b61e2548790e5856468e2b52d10c0dc46740f",
+  "files": [
+    {
+      "path": "BASELINE.json",
+      "bytes": 5363,
+      "sha256": "d686ad2c6082cac7d3c7d2445f21cb156e4b2983946fa563d885f72349021689"
+    },
+    {
+      "path": "LICENSE",
+      "bytes": 1065,
+      "sha256": "ebb4f09972aee8608be255debaf78451a68e95c290f55c240dec2ecfa16ea6be"
+    },
+    {
+      "path": "package.json",
+      "bytes": 5743,
+      "sha256": "a7903cba4aca00356cf7ee28875e6d385b3db4426afb0c96f8e1010cd2a7b025"
+    },
+    {
+      "path": "README.md",
+      "bytes": 10831,
+      "sha256": "ca0f437e0c68bc893ba95ee1d7943306405823204d08763b9be0d99871e169ec"
+    },
+    {
+      "path": "src/agent.ts",
+      "bytes": 20754,
+      "sha256": "fd99f80eb3a16179878b523647b20431b70a7d76f771d174c69de5d4673568c1"
+    },
+    {
+      "path": "src/assistant-stream.ts",
+      "bytes": 3392,
+      "sha256": "ebe1cfa8156abdd1cc677cba8c8f08991120632d510554c05f0be772993e9272"
+    },
+    {
+      "path": "src/catalog.ts",
+      "bytes": 2501,
+      "sha256": "168d5ac01e3b776650253a543ae87874e32a32451c60255edcf283b56038a1e7"
+    },
+    {
+      "path": "src/client/contract/events.ts",
+      "bytes": 7054,
+      "sha256": "64acca2457e9853a5a0159e13a335412ab622e55b88f4a0ab71eb6d9c8430d8d"
+    },
+    {
+      "path": "src/client/contract/session.ts",
+      "bytes": 7109,
+      "sha256": "68c1bf8543a6f7d9508b055330afb9ad12f1949f55b4a2448eef372124133be6"
+    },
+    {
+      "path": "src/client/contract/sessions.ts",
+      "bytes": 5324,
+      "sha256": "aa67caae0cef2fdd6d88723e1a2dfabfbc3a1be2a2df4fdee1515319cee5f69d"
+    },
+    {
+      "path": "src/client/contract/snapshot.ts",
+      "bytes": 4425,
+      "sha256": "37f618ff077a8cb0d22ea24f55f8ebb504b7cd458529ac2ed22d207432799738"
+    },
+    {
+      "path": "src/client/index.ts",
+      "bytes": 4227,
+      "sha256": "9a5e41ebcbd52cfdca7cbbcbb6a7d0c62ab95c216e8208ec38d03013ac3f8cf3"
+    },
+    {
+      "path": "src/client/ordered-baseline.ts",
+      "bytes": 1694,
+      "sha256": "0a7903af3ccce78150fed0d82d1eeab1784da4b434ab8db4f89edb1805678066"
+    },
+    {
+      "path": "src/client/scope.ts",
+      "bytes": 3445,
+      "sha256": "1ed5d9c17d3f54a95d5f688b3dc9039ca3bd114b8a7dc68768cacc7a2d21fc11"
+    },
+    {
+      "path": "src/client/session-wire-event.ts",
+      "bytes": 2018,
+      "sha256": "a7f30dadbc540666396277e528f18dc6e87d64e32a98cfea98c696f2d427b4f9"
+    },
+    {
+      "path": "src/client/sessions/assistant-stream.ts",
+      "bytes": 7841,
+      "sha256": "fc4cb49fa268e1f3fa8baaf78eef5f61ec4f3c2f60910332ab79e3263a3dbd6b"
+    },
+    {
+      "path": "src/client/sessions/history-records.ts",
+      "bytes": 1140,
+      "sha256": "e560d8aff073e46ea6936fcf4048b6785da0b986c0b085eba67a00a4cca86388"
+    },
+    {
+      "path": "src/client/sessions/lineage.ts",
+      "bytes": 3508,
+      "sha256": "461a4af7f4a8353cc9b523455781c69a8ee20bd37731712918fe58ff9e41598a"
+    },
+    {
+      "path": "src/client/sessions/manager.ts",
+      "bytes": 43224,
+      "sha256": "b7ffce5da48470488623d0a20dad7aa8e2c43ec33072150cb6a6ea29e2958e28"
+    },
+    {
+      "path": "src/client/sessions/notifier.ts",
+      "bytes": 2848,
+      "sha256": "34a7984f65b30363dde994f60b0b3a775955d4596dc60ab53cc6a043355be74e"
+    },
+    {
+      "path": "src/client/sessions/projection-store.ts",
+      "bytes": 8097,
+      "sha256": "e628d282f0dbfff1fc8dc1ac6739bce41676d5266575ebcfb229f48b6091dd22"
+    },
+    {
+      "path": "src/client/sessions/queue-mirror.ts",
+      "bytes": 2549,
+      "sha256": "ff87759a58a80d109dd6dffe22f2a7e17bcdba8d97c5b915f88e559af12e4aa6"
+    },
+    {
+      "path": "src/client/sessions/remotes.ts",
+      "bytes": 1799,
+      "sha256": "7e33f3e6968d4d3b0e124c6b71b35babcbc8ca56cff41ecf6b42348f7dbf6e75"
+    },
+    {
+      "path": "src/client/sessions/service.ts",
+      "bytes": 30022,
+      "sha256": "cac7da8322d53fd29036d81549144b094921b5cb7a00439722abf933d55aba33"
+    },
+    {
+      "path": "src/client/sessions/session.ts",
+      "bytes": 35645,
+      "sha256": "70596f5ed756ae0ab6122f43faa70069d30521f8adcce8098cf71e729bd861b3"
+    },
+    {
+      "path": "src/client/time-zone.ts",
+      "bytes": 521,
+      "sha256": "854e6893a62bcb558a5317987a8c5741790e905facdd17fd621e3821b717ea12"
+    },
+    {
+      "path": "src/client/transport.ts",
+      "bytes": 8649,
+      "sha256": "b15ae401e4a6dd1951a722f1bb608d3de06741bdd3de0c20544fbb63ed158b01"
+    },
+    {
+      "path": "src/commands.ts",
+      "bytes": 27105,
+      "sha256": "0507081d383edcc08720ce4d3092bcece1b40efe175398f78d70de03c730427f"
+    },
+    {
+      "path": "src/control.ts",
+      "bytes": 6757,
+      "sha256": "a38002b1eb9603bfe220439cc59268145d9c8933a21a8c72b7cc54e442ee1e26"
+    },
+    {
+      "path": "src/file-references.ts",
+      "bytes": 1520,
+      "sha256": "870a790822334996b731d05901e4dc4b6a8ac6dec431b697b2c95db41739d91b"
+    },
+    {
+      "path": "src/history.ts",
+      "bytes": 16673,
+      "sha256": "799b39f84cf16041e320f32217e13da4cf345bb6780dd65e5627a0aff2752ecd"
+    },
+    {
+      "path": "src/host-routes.ts",
+      "bytes": 2895,
+      "sha256": "e1d03c668178d8a23e74afe43f2f2a62aaff7a1dd76b475eca7af3b42231fe63"
+    },
+    {
+      "path": "src/index.ts",
+      "bytes": 16973,
+      "sha256": "ca915c8246dc0fd92c6c78516e16cecf53d1c11eefbd0301db036980cf211295"
+    },
+    {
+      "path": "src/list.ts",
+      "bytes": 12747,
+      "sha256": "8c1d376917552b8c510393666438f53d9bbe2d8e728fd0b50cfd2d81b52858e9"
+    },
+    {
+      "path": "src/media-references.ts",
+      "bytes": 3192,
+      "sha256": "ffe8273e5369ceee71c8369b589877d02c53280ffcbd31ae5c068fcc5fc47145"
+    },
+    {
+      "path": "src/model-selection-projection.ts",
+      "bytes": 3063,
+      "sha256": "dfc401247080f930d148effea68cf32c2fae37df2b9d718f387b0a0265c45d00"
+    },
+    {
+      "path": "src/remote-events.ts",
+      "bytes": 396,
+      "sha256": "c44915bb22ce3bb812932fa3901de01b69da03a82e9aac3f14d92a906e226fb5"
+    },
+    {
+      "path": "src/skill-catalog.ts",
+      "bytes": 4420,
+      "sha256": "ce36d78f96c07a2806272e50d39562ec0864c96738a0757377fe057bc6e0b575"
+    },
+    {
+      "path": "src/types.ts",
+      "bytes": 20823,
+      "sha256": "1b58088464d8d9581b4848ce46ff55ad34d32dcd4ef656577959ae44b96b63a4"
+    }
+  ],
+  "baselineLock": "upstream/dsh-session-controller/BASELINE.json",
+  "baselineLockSha256": "d686ad2c6082cac7d3c7d2445f21cb156e4b2983946fa563d885f72349021689",
+  "archive": "dsh-session-controller-0.1.5-rc.2-fusion-source.tgz",
+  "archiveSha256": "4380b73e2b9bf7c1180741cf2d902940f163c9ee3c3848ec173606391827f804",
+  "build": {
+    "node": "v24.19.0",
+    "script": "scripts/build-native-component.mjs",
+    "scriptSha256": "4fc0958427be03d509aee9d501c4949917973d47c9a692681861fb99a2b4ab2a",
+    "outputSha256": "809a751f0021889482c1923be7f7f2b6c777442c0ec723625e7225d0010be291"
+  }
+}

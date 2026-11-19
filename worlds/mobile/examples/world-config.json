@@ -1,0 +1,10 @@
+{
+  "worlds": {
+    "mobile": {
+      "enabled": true,
+      "host": "127.0.0.1",
+      "port": 7799,
+      "tokenSecret": "TINA_MOBILE_TOKEN"
+    }
+  }
+}

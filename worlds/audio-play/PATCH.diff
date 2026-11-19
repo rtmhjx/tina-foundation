@@ -1,0 +1,243 @@
+--- upstream/CHANGELOG.md
++++ canbot/CHANGELOG.md
+@@ -1,6 +1,14 @@
+ # 更新日志 · cortico-world-audio-play
+ 
+ 每个版本一节 `## <版本号>`；扩展市场按节显示更新说明。
++
++## 0.4.0-canbot.1
++
++- 本地 CANBOT 适配：只在 custom 后端将 helper 退出码 76 识别为 `outcome_unknown`，优先于取消和超时；不自动重放。
++- `skip` / `clear` 的当前项文案为 `cancel_requested`，不提前确认远端设备停止。
++- 未知结算保留 `audio-play.failed` 事件，包括 World 停止与自动播放冷却期间；其他后端及普通取消语义不变。
++- 增加真实假子进程、队列事件和 POSIX SIGTERM 测试；Windows 的 POSIX 用例明确跳过，不作为通过证据。
++- 本地源文件与包交付，不等于正式挂载或设备实测。上游来源及文件哈希见随包记录。
+ 
+ ## 0.4.0
+ 
+--- upstream/describe.json
++++ canbot/describe.json
+@@ -79,7 +79,7 @@
+     },
+     {
+       "name": "audio_queue",
+-      "description": "Read or change the playback queue. list shows what is playing now and what is waiting; skip stops the current item and lets the next one start; remove drops one waiting item by id; clear stops the current item and drops everything waiting. Skipping and clearing are cancellations, not failures: no audio-play.failed event is sent. Manual plays and watched event audio share one queue; ids come from an audio_play receipt or from list.",
++      "description": "Read or change the playback queue. list shows what is playing now and what is waiting; skip requests cancellation of the current item; remove drops one waiting item by id; clear requests cancellation and drops everything waiting. cancel_requested does not confirm that a remote device stopped. The queue waits for the player subprocess to close before advancing. Ordinary cancellations are silent; custom-helper exit 76 remains a visible outcome_unknown audio-play.failed event, even after cancellation. Never automatically replay an unknown outcome. Manual plays and watched event audio share one queue; ids come from an audio_play receipt or from list.",
+       "parameters": {
+         "type": "object",
+         "properties": {
+@@ -91,7 +91,7 @@
+               "remove",
+               "clear"
+             ],
+-            "description": "list = current item and waiting items; skip = stop the current item; remove = drop one waiting item; clear = stop the current item and drop all waiting items."
++            "description": "list = current item and waiting items; skip = request cancellation of the current item; remove = drop one waiting item; clear = request cancellation and drop all waiting items."
+           },
+           "id": {
+             "type": "string",
+@@ -106,8 +106,8 @@
+         "act"
+       ],
+       "summary": {
+-        "zh": "查看或调整播放队列：列表、跳过当前这条、按 id 移除排队中的一条、停止当前并清空队列；跳过和清空是取消，不算失败，不发失败事件。",
+-        "en": "Read or change the playback queue: list, skip the current item, remove a waiting item by id, or stop the current item and clear the queue; skipping and clearing are cancellations, not failures, so no failure event is sent."
++        "zh": "查看或调整播放队列；跳过和清空仅请求取消，不确认设备已停止。custom helper 退出 76 的未知结算即使发生在取消之后，也保留可见失败事件，不自动重放。",
++        "en": "Read or change the playback queue. Skip and clear request cancellation, without confirming device settlement. Custom-helper exit 76 remains a visible unknown-outcome failure after cancellation; never replay automatically."
+       }
+     }
+   ],
+@@ -120,13 +120,5 @@
+       },
+       "trigger": "debounce"
+     }
+-  ],
+-  "prompts": [
+-    {
+-      "key": "worlds.audio-play.env",
+-      "title": "提示词",
+-      "role": "envPrompt",
+-      "content": ""
+-    }
+   ]
+ }
+--- upstream/package.json
++++ canbot/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "cortico-world-audio-play",
+-  "version": "0.4.0",
++  "version": "0.4.0-canbot.1",
+   "type": "module",
+   "description": "音频播放（Audio Play）—— 给 Coopanion 桌宠的 cortico World 扩展：把 log:/mem: 音频句柄或本地音频文件交给本机播放器播放（后端可配置，支持 ffplay / mpv / VLC 与自定义命令），开始播放后立刻返回，失败才发事件；也可以监听其他扩展的声音事件自动播放。 / A cortico World extension that plays a log:/mem: audio handle or a local audio file through a configurable local player (ffplay / mpv / VLC or a custom command): the tool returns as soon as playback starts and only failures arrive as events. It can also watch voice events from other extensions and play their audio automatically.",
+   "license": "MIT",
+@@ -41,9 +41,15 @@
+     "dist",
+     "describe.json",
+     "CHANGELOG.md",
+-    "README.md"
++    "README.md",
++    "CANBOT-PATCH.md",
++    "UPSTREAM.json",
++    "PATCH.diff",
++    "SOURCE-HASHES.json",
++    "tests"
+   ],
+   "scripts": {
++    "test": "node --test tests/*.test.mjs",
+     "selfcheck": "node tools/check.mjs",
+     "describe:extension": "node tools/describe.mjs",
+     "drymount": "node --experimental-transform-types tools/drymount.mts",
+--- upstream/README.md
++++ canbot/README.md
+@@ -1,4 +1,6 @@
+ # 音频播放 · cortico-world-audio-play
++
++本目录为 CANBOT 本地适配版 **0.4.0-canbot.1**，基于上游 0.4.0；包名、World ID `audio-play`、API 6 均不变。它为 custom helper 约定退出码 `76` = `outcome_unknown`：即使已经请求取消，也保留可见失败事件，不自动重放。来源、测试边界和最小补丁见 [CANBOT-PATCH.md](CANBOT-PATCH.md)。尚未由本目录构建动作证明任何设备播放或停止。
+ 
+ 给 Coopanion 桌宠补上一件小事：**把一段音频从本机扬声器放出来**。`audio_play` 接一个本地音频路径，
+ 或 `log:` / `mem:` 句柄（`tts_speak` 回执里的路径和附件句柄都能直接用），开始播放后立刻返回；
+@@ -53,11 +55,11 @@
+ | action | 行为 |
+ | --- | --- |
+ | `list` | 当前这条（id、来源、音量、已播几秒）与排队中的条目 |
+-| `skip` | 中止当前这条，下一条立刻开始；没有当前项时丢掉排队里的第一条 |
++| `skip` | 请求取消当前这条；等待子进程退出后才处理下一条，没有当前项时丢掉排队里的第一条 |
+ | `remove` | 按 id 删掉排队中的某条；当前这条要用 `skip` |
+-| `clear` | 停掉当前这条并清空排队 |
+-
+-跳过和清空是**取消**，不是失败：播放器进程会被停掉，不发 `audio-play.failed`。手动播放和事件自动播放共用同一个队列，`music.played` 这类事件音频也能跳掉。队列只在内存里，重启应用后不会保留。
++| `clear` | 请求取消当前这条并清空排队 |
++
++跳过和清空先返回 `cancel_requested`，不等于远端设备已经停止。普通取消仍不发失败事件；custom helper 若以 `76` 退出，`audio-play.failed` 会保留 `outcome_unknown`、`settled=false`、`retryAutomatically=false`，不会被取消、World 停止或自动播放事件冷却吞掉。队列等待子进程退出后才处理下一条；未知退出仍会推进队列，不代表设备已结算，设备侧的 active 门仍负责拒绝重叠。手动播放和事件自动播放共用同一个队列，`music.played` 这类事件音频也能请求取消。队列只在内存里，重启应用后不会保留。
+ 
+ ## 安装
+ 
+@@ -214,7 +216,7 @@
+ `audio-play.failed` 事件，正文带音频来源、音量与原因，meta 带 `origin`（`manual` / `event`）、
+ `ref`、`type` 与 `backend`。事件默认投递到对话事件流，会唤醒桌宠。
+ 
+-- 手动 `audio_play` 和自动播放失败都走同一条事件；取消（用户打断、World 停止）不算失败，不发事件。
++- 手动 `audio_play` 和自动播放失败都走同一条事件；普通取消不发事件，但 custom helper 的 `76` 未知结算即使在用户打断或 World 停止期间仍然发事件。
+ - 自动播放连续失败时，失败事件 30 秒内最多发一次；完整失败记录仍然写日志与状态。
+ - 成功没有后续事件。工具回执里的「开始播放」只表示已经入队，不代表一定放出来了。
+ 
+--- upstream/src/definition.js
++++ canbot/src/definition.js
+@@ -19,8 +19,8 @@
+     en: 'Turn automatic playback of event audio on or off, change the watched event types or the playback backend, or read the current settings; plays audio attachments on new events.',
+   },
+   audio_queue: {
+-    zh: '查看或调整播放队列：列表、跳过当前这条、按 id 移除排队中的一条、停止当前并清空队列；跳过和清空是取消，不算失败，不发失败事件。',
+-    en: 'Read or change the playback queue: list, skip the current item, remove a waiting item by id, or stop the current item and clear the queue; skipping and clearing are cancellations, not failures, so no failure event is sent.',
++    zh: '查看或调整播放队列；跳过和清空仅请求取消，不确认设备已停止。custom helper 退出 76 的未知结算即使发生在取消之后，也保留可见失败事件，不自动重放。',
++    en: 'Read or change the playback queue. Skip and clear request cancellation, without confirming device settlement. Custom-helper exit 76 remains a visible unknown-outcome failure after cancellation; never replay automatically.',
+   },
+ };
+ 
+--- upstream/src/ENV_PROMPT.md
++++ canbot/src/ENV_PROMPT.md
+@@ -0,0 +1 @@
++CANBOT custom 播放 helper 的退出码 76 表示 `outcome_unknown`：未确认设备播放完成或停止，不能自动重放。`audio_queue skip/clear` 返回 `cancel_requested` 只表示已请求取消；等待设备结算。即使已经请求取消，未知结果仍会作为 `audio-play.failed` 事件送达。音频队列等待 helper 子进程退出后再处理下一项，子进程退出不等于设备物理停止；不要把未知回执改写成已完成或已停止。
+--- upstream/src/player.js
++++ canbot/src/player.js
+@@ -41,7 +41,7 @@
+ 
+ export class PlaybackError extends Error {
+   /**
+-   * @param {'missing'|'spawn'|'timeout'|'aborted'|'media'|'open'|'failed'} code
++   * @param {'missing'|'spawn'|'timeout'|'aborted'|'media'|'open'|'failed'|'outcome_unknown'} code
+    * @param {string} message
+    * @param {string} [detail]
+    */
+@@ -151,6 +151,12 @@
+       finish(reject, new PlaybackError('spawn', `播放器起不来：${msg(err)}`));
+     });
+     child.on('close', (code, closeSignal) => {
++      // Only the custom helper opts into this contract. A signal requests
++      // cancellation; it cannot turn an unconfirmed device outcome into success.
++      if (opts.unknownExitCode !== undefined && code === opts.unknownExitCode) {
++        finish(reject, new PlaybackError('outcome_unknown', 'outcome_unknown：设备播放结算未知，未确认播放完成或停止；不要自动重放。'));
++        return;
++      }
+       if (aborted) {
+         finish(reject, new PlaybackError('aborted', '播放被取消。'));
+         return;
+@@ -340,7 +346,7 @@
+   if (!bin) {
+     throw new PlaybackError('missing', '自定义命令替换后没有可执行的命令。');
+   }
+-  const result = await run(bin, args, { timeoutMs: timeoutMs + 5000, signal });
++  const result = await run(bin, args, { timeoutMs: timeoutMs + 5000, signal, unknownExitCode: 76 });
+   if (result.code === 0) return { backend: 'custom' };
+   const detail = detailOf(result);
+   throw new PlaybackError(
+--- upstream/src/world.js
++++ canbot/src/world.js
+@@ -89,11 +89,11 @@
+   {
+     name: 'audio_queue',
+     tags: ['act'],
+-    description: 'Read or change the playback queue. list shows what is playing now and what is waiting; skip stops the current item and lets the next one start; remove drops one waiting item by id; clear stops the current item and drops everything waiting. Skipping and clearing are cancellations, not failures: no audio-play.failed event is sent. Manual plays and watched event audio share one queue; ids come from an audio_play receipt or from list.',
++    description: 'Read or change the playback queue. list shows what is playing now and what is waiting; skip requests cancellation of the current item; remove drops one waiting item by id; clear requests cancellation and drops everything waiting. cancel_requested does not confirm that a remote device stopped. The queue waits for the player subprocess to close before advancing. Ordinary cancellations are silent; custom-helper exit 76 remains a visible outcome_unknown audio-play.failed event, even after cancellation. Never automatically replay an unknown outcome. Manual plays and watched event audio share one queue; ids come from an audio_play receipt or from list.',
+     parameters: {
+       type: 'object',
+       properties: {
+-        action: { type: 'string', enum: ['list', 'skip', 'remove', 'clear'], description: 'list = current item and waiting items; skip = stop the current item; remove = drop one waiting item; clear = stop the current item and drop all waiting items.' },
++        action: { type: 'string', enum: ['list', 'skip', 'remove', 'clear'], description: 'list = current item and waiting items; skip = request cancellation of the current item; remove = drop one waiting item; clear = request cancellation and drop all waiting items.' },
+         id: { type: 'string', description: 'For remove: the queue id to drop, e.g. q7. The current item cannot be removed; use skip.' },
+       },
+       required: ['action'],
+@@ -463,7 +463,7 @@
+         item.controller.abort();
+         const next = this.#pending[0];
+         result = {
+-          text: `已跳过 ${item.id}（${item.shown ?? this.#shownOf(item.ref)}）；${next ? `下一条 ${next.id} 接着放` : '队列里没有别的了'}。`,
++          text: `cancel_requested：已请求取消 ${item.id}（${item.shown ?? this.#shownOf(item.ref)}），等待播放器结算；${next ? `子进程退出后再处理 ${next.id}` : '队列里没有别的了'}。`,
+         };
+         break;
+       }
+@@ -496,7 +496,7 @@
+         }
+         this.#pending = [];
+         current?.controller.abort();
+-        const head = current ? `已停止 ${current.id}` : '没有正在播放的';
++        const head = current ? `cancel_requested：已请求取消 ${current.id}，等待播放器结算` : '没有正在播放的';
+         result = { text: `${head}；清空排队 ${dropped} 条。` };
+         break;
+       }
+@@ -556,8 +556,10 @@
+    * 自动播放的失败事件有冷却，避免一个坏后端把事件库刷满。
+    */
+   async #reportFailure(err, info) {
++    const outcomeUnknown = err instanceof PlaybackError && err.code === 'outcome_unknown';
+     // 停机和取消不是播放失败：不记错误、不发事件。
+-    if (this.#stopped) return;
++    // The custom helper's unknown outcome must remain visible during shutdown too.
++    if (this.#stopped && !outcomeUnknown) return;
+     if (err instanceof PlaybackError && err.code === 'aborted') return;
+     const detail = err instanceof PlaybackError ? err.message : msg(err);
+     this.#lastError = `${new Date().toISOString()} ${detail}`;
+@@ -567,13 +569,13 @@
+       ref: info.ref,
+       type: info.type,
+     });
+-    if (info.origin === 'event') {
++    if (info.origin === 'event' && !outcomeUnknown) {
+       if (!this.#bool('autoPlay')) return;
+       const now = Date.now();
+       if (now - this.#lastAutoFailureAt < AUTO_FAILURE_EVENT_MS) return;
+       this.#lastAutoFailureAt = now;
+     }
+-    await this.#pushFailure(detail, info);
++    await this.#pushFailure(detail, { ...info, outcomeUnknown });
+   }
+ 
+   async #pushFailure(detail, info) {
+@@ -590,6 +592,7 @@
+         ts: new Date().toISOString(),
+         text: `${label}：${detail}\n${bits.join(' · ')}`,
+         meta: {
++          ...(info.outcomeUnknown ? { code: 'outcome_unknown', settled: false, retryAutomatically: false } : {}),
+           origin: info.origin,
+           ref: info.ref ?? '',
+           type: info.type ?? '',

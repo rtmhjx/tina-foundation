@@ -1,0 +1,101 @@
+{
+  "upstream": "deepseek-ai/deepseek-harness",
+  "commit": "fb2c4b9e698e30edb738bca4cf0618587db7d203",
+  "packages": [
+    {
+      "name": "@deepseek-ai/cordis",
+      "version": "4.0.2",
+      "source": "vendor/cordis",
+      "package": "deepseek-ai-cordis-4.0.2.tgz",
+      "sha256": "472183d3ac8aa007cf2c548167f4c345ba23b651def3ee3f3ec7b068c5f50990",
+      "workspaceRangeMaterialization": [
+        [
+          "dependencies",
+          "@deepseek-ai/cosmokit",
+          "^1.8.3"
+        ],
+        [
+          "peerDependencies",
+          "@deepseek-ai/cordis-plugin-include",
+          "^1.0.7"
+        ],
+        [
+          "peerDependencies",
+          "@deepseek-ai/cordis-plugin-loader",
+          "^1.0.3"
+        ]
+      ]
+    },
+    {
+      "name": "@deepseek-ai/cosmokit",
+      "version": "1.8.3",
+      "source": "vendor/cosmokit",
+      "package": "deepseek-ai-cosmokit-1.8.3.tgz",
+      "sha256": "4f7cac066114854934d18f86745aadbdf104ea05771211b4ed488f5796a58c0f"
+    },
+    {
+      "name": "@deepseek-ai/cordis-plugin-loader",
+      "version": "1.0.3",
+      "source": "vendor/loader",
+      "package": "deepseek-ai-cordis-plugin-loader-1.0.3.tgz",
+      "sha256": "c292998268dbbce25afe0ee09cf4dbb9768af8f10831bfd816d4a81deb9f5b39",
+      "workspaceRangeMaterialization": [
+        [
+          "dependencies",
+          "@deepseek-ai/cosmokit",
+          "^1.8.3"
+        ],
+        [
+          "peerDependencies",
+          "@deepseek-ai/cordis",
+          "^4.0.2"
+        ]
+      ]
+    },
+    {
+      "name": "@deepseek-ai/cordis-plugin-include",
+      "version": "1.0.7",
+      "source": "vendor/include",
+      "package": "deepseek-ai-cordis-plugin-include-1.0.7.tgz",
+      "sha256": "806961164e7dc8672c4231a8294955dd1e778196bd31dc51c76dc46d2b4dbe50",
+      "workspaceRangeMaterialization": [
+        [
+          "dependencies",
+          "@deepseek-ai/cosmokit",
+          "^1.8.3"
+        ],
+        [
+          "peerDependencies",
+          "@deepseek-ai/cordis-plugin-loader",
+          "^1.0.3"
+        ],
+        [
+          "peerDependencies",
+          "@deepseek-ai/cordis",
+          "^4.0.2"
+        ]
+      ]
+    },
+    {
+      "name": "@standard-schema/spec",
+      "version": "1.1.0",
+      "source": "DSH local installed dependency, pnpm-lock.yaml",
+      "package": "standard-schema-spec-1.1.0.tgz",
+      "sha256": "8a46bacdb918a11ab93fc050a61ff2fe1157448f9fe90e4afe17bce4fd1276d5"
+    },
+    {
+      "name": "argparse",
+      "version": "2.0.1",
+      "source": "DSH local installed dependency, pnpm-lock.yaml",
+      "package": "argparse-2.0.1.tgz",
+      "sha256": "1eeab48f4a303ba31d823955470e55d2dbe30d65066dd653c32dff2c5335daa4"
+    },
+    {
+      "name": "js-yaml",
+      "version": "4.2.0",
+      "source": "DSH local installed dependency, pnpm-lock.yaml",
+      "package": "js-yaml-4.2.0.tgz",
+      "sha256": "d6bc7aac5ac7b16f5db099f1e0de2c8951cb9e3fec29f98aed57d0184c387b17"
+    }
+  ]
+}

@@ -1,0 +1,227 @@
+{
+  "format": 1,
+  "package": "@deepseek-ai/dsh-client-file-upload",
+  "version": "0.1.5-rc.2",
+  "kind": "host-source-built-overlay",
+  "upstream": "https://github.com/deepseek-ai/deepseek-harness",
+  "upstreamCommit": "fb2c4b9e698e30edb738bca4cf0618587db7d203",
+  "source": "upstream/dsh-file-upload",
+  "sourceTreeSha256": "8df4f0ebd235ee970ae2d60b2e0e1a962a36419738cbac21cbaeb7bbcac60975",
+  "files": [
+    {
+      "path": "LICENSE",
+      "bytes": 1065,
+      "sha256": "ebb4f09972aee8608be255debaf78451a68e95c290f55c240dec2ecfa16ea6be"
+    },
+    {
+      "path": "package.json",
+      "bytes": 2296,
+      "sha256": "b3343502dbe675c51534da58ef1343f329f3876665e3325bf5db0cd2f3aba63d"
+    },
+    {
+      "path": "README.md",
+      "bytes": 1676,
+      "sha256": "2278986b34b1434e8bfe8dc34960690a9920c5e9e140bbb1f7c0d034a32d20f2"
+    },
+    {
+      "path": "src/client/contract.ts",
+      "bytes": 1491,
+      "sha256": "9be4e5d89284e838924112dd94eb40ede2e537970d7f0fbc2ac38e67f29ba068"
+    },
+    {
+      "path": "src/client/index.ts",
+      "bytes": 797,
+      "sha256": "0055131531cd71087e2615410bb7bd7d2fc8bb1bcff78d85b2cc07a9789aef61"
+    },
+    {
+      "path": "src/client/runtime.ts",
+      "bytes": 13340,
+      "sha256": "cbbdcd4ea1a0b7e92716bb6b52cd67a7e14df8078d8cd07fc3b699ebdde4f933"
+    },
+    {
+      "path": "src/http-route.ts",
+      "bytes": 2776,
+      "sha256": "dc91debb0862f7c153559dfc172cc95f185f47c25337feb27ec4f4c5e5db76e0"
+    },
+    {
+      "path": "src/index.ts",
+      "bytes": 10268,
+      "sha256": "dbb3a5d942e637b29a23c8e708bd3703ad9f384adf0444a179ef85364ae94676"
+    },
+    {
+      "path": "src/protocol.ts",
+      "bytes": 134,
+      "sha256": "0d8ce6974fcdec65e395c31322fb0e0393b725220165f6a7b5e81909f44efcb8"
+    },
+    {
+      "path": "src/types.ts",
+      "bytes": 1375,
+      "sha256": "811ef38c6d9b6582d2476ce62064bf1e91cb1e98117b83733e1a71effb375892"
+    },
+    {
+      "path": "tsconfig.json",
+      "bytes": 646,
+      "sha256": "85a70b35ea13982003518db0e7715833f067d039842e841b1a04be9690be6f51"
+    }
+  ],
+  "baselineLock": "vendor/dsh-file-upload-baseline-lock.json",
+  "baselineLockSha256": "13777ff99a5df6539b04fdf27d8dee1a5da676ec92909fb573dc1f29d8b3f7ce",
+  "buildScope": "Four host TypeScript files and the host bundle; browser and Typert-generated entrypoints remain locked baseline payloads.",
+  "generatedFiles": [
+    {
+      "path": "lib/index.js",
+      "bytes": 12803,
+      "sha256": "73ff275b60bd9c893647f73af8af62b52b2e444df282321c1a3c9c65ff11d747"
+    },
+    {
+      "path": "lib/index.js.map",
+      "bytes": 22973,
+      "sha256": "028e65714fed03f3ca516b815c1f4581d43764569297643533b181880d080243"
+    },
+    {
+      "path": "lib/types/http-route.d.ts",
+      "bytes": 535,
+      "sha256": "68dd2997e37421147f141aa260b45a0d8d1e119209b67cdc2dc9b31c6b24fb14"
+    },
+    {
+      "path": "lib/types/http-route.d.ts.map",
+      "bytes": 280,
+      "sha256": "c8c9aa91432bde75da79a460564f396110b865a0b6ca7845b2981ffc6ab785ce"
+    },
+    {
+      "path": "lib/types/http-route.js",
+      "bytes": 2560,
+      "sha256": "3dc1b4a17a6414e47f57951c7947a049657131f4d2036f8941028086a78632d4"
+    },
+    {
+      "path": "lib/types/index.d.ts",
+      "bytes": 4187,
+      "sha256": "996361d80513125f7d181fd7a578035061d569b2131d7f26e9b7af01968646ea"
+    },
+    {
+      "path": "lib/types/index.d.ts.map",
+      "bytes": 1719,
+      "sha256": "1477e95cc9fcc579427a5a40e57fe42079eddbf6ada4f8571e2c056452fa3634"
+    },
+    {
+      "path": "lib/types/index.js",
+      "bytes": 12320,
+      "sha256": "489c25810528dd88897f05d5e458193f87f6be8e444c276f7973f22447deda04"
+    },
+    {
+      "path": "lib/types/protocol.d.ts",
+      "bytes": 181,
+      "sha256": "41333bd6d5795c708b3ba1d5012341b62c209e91c305ee5d6412426555c5ee6e"
+    },
+    {
+      "path": "lib/types/protocol.d.ts.map",
+      "bytes": 159,
+      "sha256": "cfc7d2c66013b872487edc4d79f44ff32679be0d74204840273d3ee0bbc7c99e"
+    },
+    {
+      "path": "lib/types/protocol.js",
+      "bytes": 135,
+      "sha256": "5dff1e0b57c31e23c5cb32ac7347a61d0682fc72938237d3baa69add84f27038"
+    },
+    {
+      "path": "lib/types/types.d.ts",
+      "bytes": 1429,
+      "sha256": "68919d5fe46028fcb5981f06635d68d2d4a6429be91cb203f399034631b09953"
+    },
+    {
+      "path": "lib/types/types.d.ts.map",
+      "bytes": 744,
+      "sha256": "64290836679cd3f48829c94ffe91526c6363f84559202bfbe927456879f5061c"
+    },
+    {
+      "path": "lib/types/types.js",
+      "bytes": 82,
+      "sha256": "5690d9b35e1771f2f6f4e3e8269ff2b981b7c2dc440608c788c25bd6f0a7ac0b"
+    }
+  ],
+  "retainedBaselineFiles": [
+    {
+      "path": "lib/client.js",
+      "sha256": "90d4a010e44f58872c8ea172fa80445ce0e5baf54c886418ae7302f8166c6c53"
+    },
+    {
+      "path": "lib/typert.host.d.ts",
+      "sha256": "5e2d26ee86d0fe170dac8cd3f5854e67bdea334c57f40a5766ace57b8304c17d"
+    },
+    {
+      "path": "lib/typert.host.js",
+      "sha256": "a449e63be2cff6c8c97d7decf31a8ddd380ed7db3a5678276a15543392f89ca3"
+    },
+    {
+      "path": "lib/typert.remote-client.d.ts",
+      "sha256": "a9f6e5edf94e9a2df4f4a92f7b13eca68c564d8073a1a71f7355db3fe774f2c8"
+    },
+    {
+      "path": "lib/typert.remote-client.js",
+      "sha256": "ed6183daecace180e8bf8dcb3f2499da33089acc1f62e3d4cd81b1aa566690c6"
+    },
+    {
+      "path": "lib/types/client/contract.d.ts",
+      "sha256": "d07c4a78cd35d82a40897a00d38ef6ebf5dd1e8085b9f386940092f367ad79c4"
+    },
+    {
+      "path": "lib/types/client/contract.js",
+      "sha256": "8d2365441ba5a21d8a7d4dbf9912d645c280066ae6f07d071b5dc37e184f2522"
+    },
+    {
+      "path": "lib/types/client/index.d.ts",
+      "sha256": "dde37ef296beb8b509d4b8f2308d8be9cf87eca79b017401a7581d5e0e059ae7"
+    },
+    {
+      "path": "lib/types/client/index.js",
+      "sha256": "4004c77cadbe6baf2abb228831346718d31040d2e9b2c67d92c28eac44476d4b"
+    },
+    {
+      "path": "lib/types/client/runtime.d.ts",
+      "sha256": "11cf111b5c5ffc6171b74c702b39cb2ba04df77f50552b74643350373c9f0755"
+    },
+    {
+      "path": "lib/types/client/runtime.js",
+      "sha256": "ca94da2dd9184b6c91c0fe7483ab9518e558865fdb301cb10304782fb79608fd"
+    },
+    {
+      "path": "README.i18n.yaml",
+      "sha256": "a6e37456afc11efaed9d78938b1ba3369958c9d5718d80209321e351bb7cce67"
+    },
+    {
+      "path": "README.md",
+      "sha256": "cc44a7ce715d6a16a5413f924f8a54c5244b9dc85b7a9115b7b2086796abb41d"
+    },
+    {
+      "path": "README.zh.md",
+      "sha256": "a57f1fcbe3460b1730a88fae58594a9c61e26079ee218cdd349c8ba2ae0fec56"
+    }
+  ],
+  "archive": "dsh-file-upload-0.1.5-rc.2-fusion-source.tgz",
+  "archiveSha256": "8ce5a785b637aabf31a4c92e7b0516ebcd6a0bd73dda06758af69d15e96834f7",
+  "build": {
+    "startedAt": "2026-11-15T08:27:02.572Z",
+    "finishedAt": "2026-11-15T08:27:05.840Z",
+    "node": "v24.19.0",
+    "typescript": "5.9.3",
+    "esbuild": "0.28.2",
+    "commands": [
+      [
+        "node",
+        "typescript/bin/tsc",
+        "-p",
+        "upstream/dsh-file-upload/tsconfig.json"
+      ],
+      [
+        "esbuild",
+        "lib/types/index.js",
+        "--bundle",
+        "--packages=external",
+        "--platform=node",
+        "--target=node24"
+      ]
+    ],
+    "script": "scripts/build-dsh-file-upload.mjs",
+    "scriptSha256": "9a1d75a38227405311ff703857f2214ff001dd315a2d93240692284b8b50bec3"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "cortico-world-audio-play",
+  "version": "0.4.0",
+  "gitHead": "88d0b49272e0cdeb6c5abac910b700068b8bf8dc",
+  "repository": {
+    "url": "git+https://github.com/AqualCross/cortico-world-audio-play.git",
+    "type": "git"
+  },
+  "integrity": "sha512-J3U7z5jFvKMSGguN5jVunz7zx2p/HCiqsCXw6Kc4aD+1rjBMKrmpJfngJlfTla/KFSvlS45ZmSfzwK9OGmSu3g==",
+  "tarSha256": "5084951ff068e709ca3fe9bb6b22a7e37ca2df136dfb41f581fbc92e376874c0",
+  "api": 6,
+  "license": "MIT",
+  "dependencies": {},
+  "adaptationVersion": "0.4.0-canbot.1",
+  "originalPackagePath": "research/world/upstream/cortico-world-audio-play-0.4.0/package",
+  "reviewMode": "local-copy-no-network",
+  "worldId": "audio-play",
+  "apiUnchanged": 6
+}

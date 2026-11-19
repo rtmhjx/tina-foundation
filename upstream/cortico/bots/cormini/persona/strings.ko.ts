@@ -1,0 +1,56 @@
+import type { webUiEn, panelEn, configEn } from './strings.ts';
+
+export const webUiText: Partial<typeof webUiEn> = {
+  orientation: 'Persona의 존재 방식과 메타인지에 대한 설명.',
+  constitution: 'Persona의 장기 원칙. 시스템 프리픽스를 다시 불러오거나 새 컨텍스트를 시작하면 적용됩니다.',
+  memoryNote: '기억 규칙: 봇의 파일이 어떻게 저장되고 언제 저절로 떠오르는지.',
+  workspaceLabel: '작업 공간(봇이 직접 쓴 기억 파일)',
+  workspaceNote: '헌법을 제외한 모든 작업 공간 파일을 되돌릴 수 없게 삭제합니다. 헌법과 인격 체크포인트는 건드리지 않습니다',
+  workspaceStat: (n: number) => `파일 ${n}개(헌법 제외)`,
+  workspaceCleared: (n: number) => `작업 공간 파일 ${n}개를 삭제했습니다. 헌법은 건드리지 않았습니다`,
+  firstTurnUser: '첫 턴 · 사용자 입력',
+  firstTurnUserDesc: '합성한 첫 턴의 user 메시지입니다. 이것과 응답 중 하나라도 비어 있으면 턴 전체를 넣지 않습니다.',
+  firstTurnThinking: '첫 턴 · 추론',
+  firstTurnThinkingDesc: '합성한 첫 assistant 턴의 추론(reasoning_content)입니다. 비어 있으면 그 턴에 추론이 없습니다. openai-responses-compat 방언은 추론을 회신하지 않으므로 이런 엔드포인트에서는 이 부분이 전송되지 않습니다.',
+  firstTurnReply: '첫 턴 · 응답',
+  firstTurnReplyDesc: '합성한 첫 턴의 assistant 응답 본문입니다.',
+};
+
+export const panelText: Partial<typeof panelEn> = {
+  workspace: '작업 공간',
+  workspaceDesc: '저장하면 operator 이름으로 작업 공간 Git 저장소에 커밋됩니다.',
+  history: '버전 기록',
+  saved: '저장',
+  removed: '삭제',
+  renamed: '이름 변경',
+  committed: (done: string, hash: string) => `${done} 후 커밋했습니다(${hash})`,
+  notCommitted: (done: string) => `${done} 완료(git에 커밋하지 않음: 변경 사항이 없거나 git을 사용할 수 없음)`,
+  missingArg: (what: string) => `${what}이(가) 없습니다`,
+  movedOrDeleted: '파일이 이동되었거나 삭제되었습니다',
+  changedBeforeSave: '파일이 다른 곳에서 수정되었습니다. 다시 불러온 뒤 저장하세요',
+  changedBeforeRemove: '파일이 다른 곳에서 수정되었습니다. 다시 불러온 뒤 삭제하세요',
+  changedBeforeRename: '파일이 다른 곳에서 수정되었습니다. 다시 불러온 뒤 이름을 바꾸세요',
+  fileMissing: (path: string) => `파일이 없습니다: ${path}`,
+  isDirectory: (path: string) => `${path}은(는) 파일이 아니라 폴더입니다`,
+  tooLargeToPreview: '파일이 1MB를 넘어 미리 보기를 하지 않습니다',
+  binaryFile: '바이너리 파일이라 미리 보기를 하지 않습니다',
+  contentNotString: 'content는 문자열이어야 합니다',
+  nulInText: '텍스트에 NUL 문자를 넣을 수 없습니다',
+  tooLargeToSave: '파일이 1MB를 넘어 저장하지 않았습니다',
+  nameTaken: '같은 이름의 파일이 이미 있습니다',
+  unknownMethod: (panel: string, method: string) => `알 수 없는 패널 메서드: ${panel}.${method}`,
+  unknownPanel: (panel: string) => `알 수 없는 패널: ${panel}`,
+};
+
+export const configText: Partial<typeof configEn> = {
+  title: '컨텍스트와 인계',
+  description: '모델 창과 1회 출력 상한은 「모델 연결」 페이지에서 설정합니다. 컨텍스트가 모델의 하드 한도에 도달하면 Core가 인계를 강제합니다.',
+  maxTokens: '컨텍스트 단계 예산',
+  maxTokensDesc: '컨텍스트가 단계 예산 × 소프트 임계값 비율을 넘으면 먼저 알립니다. 다음 배치가 끝날 때도 넘으면 인계합니다.',
+  keepRatio: '인계 보존 비율',
+  keepRatioDesc: '인계 노트의 토큰 예산 = 단계 예산 × 이 비율. 노트는 최근 내용을 남기고, 그 이전 부분은 개수만 남깁니다.',
+  softRatio: '소프트 임계값 비율',
+  softRatioDesc: '컨텍스트 경고 임계값 = 단계 예산 × 이 비율.',
+  firstTurn: '합성 첫 턴',
+  firstTurnDesc: '배포의 prompts/에 있는 첫 턴(FIRST_TURN_USER / THINKING / REPLY)을 합성된 시작으로 매 요청에 보냅니다. 세션에는 기록하지 않으며, 내용이 비어 있으면 보내지 않습니다.',
+};

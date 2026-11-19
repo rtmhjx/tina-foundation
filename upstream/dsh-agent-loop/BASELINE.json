@@ -1,0 +1,85 @@
+{
+  "format": 1,
+  "package": "@deepseek-ai/dsh-agent-loop",
+  "version": "0.1.5-rc.2",
+  "sourceOrigin": "F:\\AI\\\u63a2\u7d22\\deepseek-harness\\packages\\core\\agent-loop",
+  "sourceBaselineLock": "vendor/dsh-agent-loop-baseline-lock.json",
+  "sourceBaselineLockSha256": "22a948d3812055a89f489d42889699303bef47f1b8a91fe9e599ee157c39dd7e",
+  "runtimeBaseline": "F:\\AI\\\u63a2\u7d22\\deepseek-harness\\packages\\core\\agent-loop",
+  "runtimeBaselineSha256": "49e32eb383c4d90b114508244463221787273f7edb66359906223adc296e35f0",
+  "compatibleInputSha256": [
+    "1090dc12555ff26e40c29bd7ea4f67f6c0bca6d78b998ea85783c76a847bf69c"
+  ],
+  "sourceFiles": [
+    {
+      "path": "README.md",
+      "sha256": "ba1014a9f535de696b8eff276b2cb1bde82fc87a60485547a5213a3a6641e169",
+      "bytes": 20748
+    },
+    {
+      "path": "package.json",
+      "sha256": "a5d17de0386e7007e95b2389616ae4795e65920f5e6d17e0cbea7b000cfd1d38",
+      "bytes": 2231
+    },
+    {
+      "path": "src/agent.ts",
+      "sha256": "e378e235fd9d15404e3048f36dfc2f3f22672081a25216fa9d0d47bce8486fdb",
+      "bytes": 25359
+    },
+    {
+      "path": "src/assistant-stream.ts",
+      "sha256": "120d2bec5efeec2aa54bf0e4261a45282936272d610dbbab21eee36b902629de",
+      "bytes": 4263
+    },
+    {
+      "path": "src/constants.ts",
+      "sha256": "435d31d3c8740f5ebaefa5c12f22d7cda8ea8c6d018e6fcda459161174ecc971",
+      "bytes": 202
+    },
+    {
+      "path": "src/inbox.ts",
+      "sha256": "1f9c14cfd91baafa043cc5c82a89f60ab236ab5d0c31d6f708344e7b7efa5d21",
+      "bytes": 9447
+    },
+    {
+      "path": "src/index.ts",
+      "sha256": "a73a9477ede09567490f3885759dd92e3ed0992658d76d2a1b39c5ebc5a8dda4",
+      "bytes": 39436
+    },
+    {
+      "path": "src/invariant.ts",
+      "sha256": "db6d3d29d40392d2ab955607faf62933eaee5f2da7f519fd43de310d532b7a02",
+      "bytes": 3140
+    },
+    {
+      "path": "src/runtime-context.ts",
+      "sha256": "07b64148689d64860a18c8668bf9470140f200d32ea62ede6dfb7d0d58921a5c",
+      "bytes": 6926
+    },
+    {
+      "path": "src/tool-calls.ts",
+      "sha256": "1f8984127d4245b6a08c1e4b0c8b9d8fa7ce30ffcf08184187f16dc1bf57ae6d",
+      "bytes": 11488
+    },
+    {
+      "path": "tsconfig.json",
+      "sha256": "30613d0afa4772eb4a972986e787546b5da69a038cb9e9c7098c1e7bbc988489",
+      "bytes": 865
+    },
+    {
+      "path": "tsdown.config.ts",
+      "sha256": "6d284c7f7e842f0eb93b0bbef7eb1f558e30a59e2f9f347a8655137f6ec04ebb",
+      "bytes": 541
+    }
+  ],
+  "entryFamily": {
+    "lib/index.js": [
+      "49e32eb383c4d90b114508244463221787273f7edb66359906223adc296e35f0",
+      "1090dc12555ff26e40c29bd7ea4f67f6c0bca6d78b998ea85783c76a847bf69c"
+    ],
+    "lib/invariant.js": [
+      "c577dcdde278b761b5810d9a941131d423de40c22ff57f98a3982681ed3bf772",
+      "e482f2aafef2b0b6da25c4fb71144eb2fc0af292a232980cc4f17bbd4c09bb98"
+    ]
+  }
+}

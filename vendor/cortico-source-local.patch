@@ -1,0 +1,2581 @@
+diff --git a/bin/cortico.mjs b/bin/cortico.mjs
+index f472cb8..a68dbe5 100644
+--- a/bin/cortico.mjs
++++ b/bin/cortico.mjs
+@@ -238,7 +238,7 @@ async function createDeployment(listing) {
+  * @param {string} bot
+  * @param {string[]} passthrough
+  * @param {boolean} firstRunOpensBrowser
+- * @param {{ entry?: string, execArgv?: string[], log?: (s: string) => void, warn?: (s: string) => void }} [opts]
++ * @param {{ entry?: string, execArgv?: string[], cwd?: string, env?: NodeJS.ProcessEnv, log?: (s: string) => void, warn?: (s: string) => void }} [opts]
+  * @returns {Promise<number>}
+  */
+ export async function supervise(bot, passthrough, firstRunOpensBrowser, opts = {}) {
+@@ -246,6 +246,7 @@ export async function supervise(bot, passthrough, firstRunOpensBrowser, opts = {
+   const execArgv = opts.execArgv ?? ['--import', 'tsx'];
+   const log = opts.log ?? console.log;
+   const warn = opts.warn ?? console.error;
++  const env = opts.env ?? process.env;
+   let openBrowser = firstRunOpensBrowser;
+   for (;;) {
+     let askedRestart = false;
+@@ -253,13 +254,13 @@ export async function supervise(bot, passthrough, firstRunOpensBrowser, opts = {
+     let dataDir = null;
+ 
+     const child = fork(entry, [bot, ...passthrough], {
+-      cwd: REPO_ROOT,
++      cwd: opts.cwd ?? REPO_ROOT,
+       execArgv,
+       stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
+       env: {
+-        ...process.env,
++        ...env,
+         CORTICO_SUPERVISED: '1',
+-        CORTICO_START_PAUSED: process.env.CORTICO_START_PAUSED ?? '1',
++        CORTICO_START_PAUSED: env.CORTICO_START_PAUSED ?? '1',
+         CORTICO_OPEN_BROWSER: openBrowser ? '1' : '0',
+       },
+     });
+diff --git a/docs/webui.md b/docs/webui.md
+index 4b7441a..713b95e 100644
+--- a/docs/webui.md
++++ b/docs/webui.md
+@@ -120,7 +120,7 @@ bot 的展示名。面板、配置组与提示词文档由贡献方声明;
+ | `GET /api/avatar`、`POST /api/avatar` | bot 头像 PNG,没有时 404;POST 体是 `image/png` 原始字节，不是 PNG 时回 400 |
+ | `GET /api/usage` | 用量聚合;查询参数 `bucket`(`auto`/`minute`/`hour`/`day`/`week`/`month`)、`currency`、`basis`(`marginal`/`equivalent`)、`from`、`to`、`days`(不小于 1 的整数)、`dailyTokenDays`(不小于 1 的整数)。带 `dailyTokenDays` 时回应多一个 `dailyTokens`,是从范围末日往前这么多天(范围更长时从范围起点起)逐日的 `{ day, tokens }`,`tokens` 为输入加输出 token,按部署时区分日。`rates` 是换算用的 1 USD 合多少该币种,`rateSources` 是各币种汇率的出处:`{ kind: 'live', feed, site, date }` 或 `{ kind: 'builtin', date }` |
+ | `POST /api/run/pause`、`POST /api/run/resume`、`POST /api/run/shutdown` | 暂停、继续与关机，见「运行控制」 |
+-| `GET /api/prompts`、`POST /api/prompts` | 固定提示词的列表与编辑;POST 体 `{ key, content, baseRevision? }`,带上的 `baseRevision` 过期时回 409 并带 `conflict: true`,成功回新的 `revision` |
++| `GET /api/prompts`、`POST /api/prompts` | GET 回 `{ prompts, application }`，`application` 为 `manual`（缺省，需要显式应用）或 `next-turn`（保存后下一轮组装生效）。POST 体 `{ key, content, baseRevision? }`,带上的 `baseRevision` 过期时回 409 并带 `conflict: true`,成功回新的 `revision` |
+ | `GET /api/prompts/prefix`、`POST /api/prompts/reset`、`POST /api/session/reload-prefix` | 整条系统前缀的分段预览，回 `{ segments: [{ title, text, sourceKey? }] }`;移除一条固定提示词的部署覆盖，体 `{ key }`,回 `{ ok, result }`;用当前提示词重载当前 session 的系统前缀，对话保留，回 `{ ok, result }`。服务没挂时回 503 |
+ | `GET /api/auth/status`、`POST /api/auth/login`、`POST /api/auth/logout` | 部署设了访问密码时的登录与登出;登录态在 Cookie 里，未登录的请求回 401 并带 `x-cortico-auth: required` 头，WebSocket 握手直接断开 |
+ | `GET /api/providers`、`GET /api/providers/:name`、`POST /api/providers`、`POST /api/providers/:name/save`、`POST /api/providers/:name/activate`、`POST /api/providers/:name/test` | 模型端点：列出、详情、新建、保存(体带 `expectedRevision`)、设为当前端点、测试连通;没挂 provider 时 503 |
+diff --git a/src/bot.ts b/src/bot.ts
+index 22a7794..044db80 100644
+--- a/src/bot.ts
++++ b/src/bot.ts
+@@ -18,7 +18,7 @@ import type {
+ } from './core/types.ts';
+ import type { LoadedConfig } from './core/config.ts';
+ import { coreConfigGroup } from './core/config.ts';
+-import { resolveLanguage, type Language } from './core/language.ts';
++import { pick, resolveLanguage, type Language } from './core/language.ts';
+ import { botText } from './strings.ts';
+ import { updateJsonObject } from './config-file.ts';
+ import { ONBOARDING_FLAG_FILE } from './deploy.ts';
+@@ -27,7 +27,7 @@ import { ExtensionManager, packageMetadata, type ExtensionSet } from './extensio
+ import type { ExtensionPackageJson } from './extensions/manifest.ts';
+ import { ExtensionMarket } from './extensions/market.ts';
+ import { WorldAssembly, type WorldDefinition, type WorldDeclaration, type WorldSection } from './world.ts';
+-import { Core, type WorldStopFailure } from './core/core.ts';
++import { Core, type CoreDeps, type WorldStopFailure } from './core/core.ts';
+ import { UndeclaredNames } from './undeclared-names.ts';
+ import { RESERVED_FRAME_NAMES } from './core/loop.ts';
+ import type { ResponseClient } from './core/generation.ts';
+@@ -159,7 +159,15 @@ export interface ShutdownReport {
+   externalChecks: ShutdownExternalCheck[];
+ }
+ 
++/** WebUI 请求关闭运行实例后，由宿主决定进程的退出方式。 */
++export interface BotExitRequest {
++  kind: 'shutdown' | 'restart';
++  code: number;
++  report: ShutdownReport;
++}
++
+ export interface Bot<C extends CoreConfig = CoreConfig> {
++  readonly providerHub?: ProviderHub;
+   core: Core<C>;
+   parts: BotParts<C>;
+   /** World 槽位表:挂载表、未激活槽位与缺失声明。 */
+@@ -885,7 +893,16 @@ export function createBot<C extends CoreConfig>(
+   loaded: LoadedConfig<C>,
+   definition: BotDefinition<C>,
+   /** 启动时加载的扩展集；未提供时不显示扩展页。扩展 bot 的包内模板只读。 */
+-  opts: { extensions?: ExtensionSet } = {},
++  opts: {
++    extensions?: ExtensionSet;
++    createLoop?: CoreDeps['createLoop'];
++    session?: CoreDeps['session'];
++    worldLifecycle?: CoreDeps['worldLifecycle'];
++    prompts?: WebAppPromptDeps;
++    decoratePrompts?(original: WebAppPromptDeps): WebAppPromptDeps;
++    onProvidersChanged?(): void | Promise<void>;
++    onExit?(request: BotExitRequest): void | Promise<void>;
++  } = {},
+ ): Bot<C> {
+   const cfg = loaded.config;
+   // 环境模板允许包和部署覆盖，WebUI 仅写部署层。
+@@ -910,11 +927,16 @@ export function createBot<C extends CoreConfig>(
+     persona: parts.persona,
+     worlds: assembly.mounted,
+     llm: parts.llm,
++    ...(opts.createLoop ? { createLoop: opts.createLoop } : {}),
++    ...(opts.session ? { session: opts.session } : {}),
++    ...(opts.worldLifecycle ? { worldLifecycle: opts.worldLifecycle } : {}),
+     onWorldPush: (worldId, type) => {
+       const slot = assembly.slots.find((item) => item.id === worldId);
+       undeclared.event(`worlds.${worldId}`, slot?.definition?.describe?.events, type);
+     },
+     onWorldFailed: (failure) => assembly.failed(failure),
++    onWorldDetached: (world, options) => assembly.detached(world, options),
++    onWorldRestored: (world) => assembly.restored(world),
+   });
+   undeclared.tools('persona', definition.describe?.tools, parts.persona.ownToolNames?.() ?? []);
+ 
+@@ -959,6 +981,9 @@ export function createBot<C extends CoreConfig>(
+   // 共享端点配置位于部署根的 providers/；activeProvider 属于当前部署。
+   const providerSettings = new ProviderSettings(cfg,core.providers,join(loaded.rootDir,'config.json'),loaded.providersDir ?? join(loaded.rootDir,'providers'));
+   const providerHub = new ProviderHub(cfg, core.providers, providerSettings, join(loaded.rootDir, 'config.json'), loaded.providersDir ?? join(loaded.rootDir, 'providers'));
++  const unsubscribeProviders = opts.onProvidersChanged
++    ? providerHub.onChange(() => opts.onProvidersChanged?.())
++    : () => {};
+   const allConfigGroups = (language: Language) => [...configGroups(language),...wellFormedGroups('provider', providerSettings.groups(language))];
+   const llmManagers = new Map<string,{stop():Promise<unknown>}>([['providers',{stop:()=>core.providers.stopAll()}]]);
+ 
+@@ -975,7 +1000,10 @@ export function createBot<C extends CoreConfig>(
+   let shutdownOnce: Promise<ShutdownReport> | null = null;
+   let coreStopOnce: Promise<void> | null = null;
+   const stopCore = (): Promise<void> => {
+-    coreStopOnce ??= (async () => { await parts.onStop?.(); })();
++    coreStopOnce ??= (async () => {
++      try { await parts.onStop?.(); }
++      finally { unsubscribeProviders(); }
++    })();
+     return coreStopOnce;
+   };
+   // start() 在启动 WebUI、Provider 和 World 之前获取单实例锁。
+@@ -983,7 +1011,7 @@ export function createBot<C extends CoreConfig>(
+ 
+   const beginShutdown = (
+     reason: string,
+-    opts: { closeWeb: boolean; exit: boolean; language?: Language },
++    shutdownOptions: { closeWeb: boolean; exit: boolean; kind?: 'shutdown' | 'restart'; language?: Language },
+   ): Promise<ShutdownReport> => {
+     shutdownOnce ??= runShutdown({
+       reason,
+@@ -992,27 +1020,39 @@ export function createBot<C extends CoreConfig>(
+       worlds: () => [...assembly.mounted],
+       stopCore,
+       llmManagers,
+-      webApp: opts.closeWeb ? webApp : null,
++      webApp: shutdownOptions.closeWeb ? webApp : null,
+       log: core.runlog.logger('shutdown'),
+-      language: opts.language ?? language,
++      language: shutdownOptions.language ?? language,
+     }).then((report) => {
+       instanceLock?.release();
+       instanceLock = null;
+-      if (opts.exit) {
++      if (shutdownOptions.exit) {
+         // 先发送关机结果，再关闭 WebUI 并退出进程。
+         setTimeout(() => {
+-          void Promise.resolve(webApp?.stop()).finally(() => {
+-            process.exit(report.complete ? 0 : 1);
++          void Promise.resolve().then(() => webApp?.stop()).then(async () => {
++            const code = report.complete ? 0 : 1;
++            if (opts.onExit) await opts.onExit({ kind: shutdownOptions.kind ?? 'shutdown', code, report });
++            else process.exit(code);
++          }).catch(() => {
++            core.runlog.logger('shutdown').error('Host exit operation failed.');
++            if (!opts.onExit) process.exit(1);
+           });
+         }, 300);
+       }
+       return report;
+-    });
++    }).finally(unsubscribeProviders);
+     return shutdownOnce;
+   };
+ 
+   if (contribution.enabled !== false) {
+     const startedAt = new Date().toISOString();
++    const originalPrompts = derivePrompts(parts, assembly, contribution, cfg.timezone, promptDirs, opts.extensions?.bot !== undefined);
++    const prompts = opts.decoratePrompts
++      ? opts.decoratePrompts(originalPrompts ?? {
++        list: () => [],
++        write: () => { throw new Error('Unknown prompt document.'); },
++      })
++      : opts.prompts ?? originalPrompts;
+     /**
+      * 可清除存储清单在装配期生成一次，/api/storage 与 bot 的 webUiPages 共用这些对象;归属按来源盖章。
+      * 贡献方须在 webUi().storage 中声明全部项目；stat 和 clear 可延迟执行，子进程代理也须在装配期提供完整声明。
+@@ -1098,6 +1138,10 @@ export function createBot<C extends CoreConfig>(
+       sessionControl: {
+         reloadPrefix: async (language) => {
+           await core.loop.reloadSystemPrefix();
++          if (prompts?.application === 'next-turn') return pick(language, {
++            zh: '已保存，下次组装时生效。',
++            en: 'Saved; takes effect at the next assembly.',
++          });
+           return botText(language).visibility.prefixReloaded(Math.max(0, core.session.records.length - 1));
+         },
+       },
+@@ -1110,7 +1154,7 @@ export function createBot<C extends CoreConfig>(
+     // 重启请求先于关机写入，供监督进程在子进程退出后读取。
+         restart: (language) => {
+           requestRestart(loaded.dataDir);
+-          return beginShutdown('WebUI 重启键', { closeWeb: false, exit: true, language });
++          return beginShutdown('WebUI 重启键', { closeWeb: false, exit: true, kind: 'restart', language });
+         },
+         supervised: isSupervised(),
+         startsPaused: startsPaused(),
+@@ -1124,6 +1168,7 @@ export function createBot<C extends CoreConfig>(
+         sessionHead: () => core.loop.sessionHead(),
+         onSessionAppend: (cb) => core.session.onAppend(cb),
+         onSessionReset: (cb) => core.session.onReset(cb),
++        onStatusChange: (cb) => core.bus.onDeliveryStateChange(cb),
+         onEvent: (cb) => core.store.onAppend(cb),
+         onRunlog: (cb) => core.runlog.onWrite(cb),
+         onRunPhase: (cb) => core.loop.onRunPhase(cb),
+@@ -1170,7 +1215,7 @@ export function createBot<C extends CoreConfig>(
+         ...(contribution.status?.() ?? {}),
+       }),
+       log: core.runlog.logger('webui'),
+-      prompts: derivePrompts(parts, assembly, contribution, cfg.timezone, promptDirs, opts.extensions?.bot !== undefined),
++      prompts,
+ 
+       worldActivation: {
+         set: (id, enabled, language) => (enabled ? assembly.activate(id, language) : assembly.deactivate(id, language)),
+@@ -1184,6 +1229,7 @@ export function createBot<C extends CoreConfig>(
+     core,
+     parts,
+     assembly,
++    providerHub,
+     undeclared,
+     webApp,
+     async start() {
+@@ -1204,16 +1250,20 @@ export function createBot<C extends CoreConfig>(
+       return { port };
+     },
+     async stop() {
+-      if (extensions) {
+-        await withDeadline(extensions.close(), SHUTDOWN_BUDGET_MS.extensions, 'extensions')
+-          .catch(() => core.runlog.logger('shutdown').warn('扩展装卸没在时限内结束，照常停止'));
++      try {
++        if (extensions) {
++          await withDeadline(extensions.close(), SHUTDOWN_BUDGET_MS.extensions, 'extensions')
++            .catch(() => core.runlog.logger('shutdown').warn('扩展装卸没在时限内结束，照常停止'));
++        }
++        await core.stop();
++        await stopCore();
++        await Promise.all([...llmManagers.values()].map((m) => m.stop()));
++        if (app) await app.stop();
++        instanceLock?.release();
++        instanceLock = null;
++      } finally {
++        unsubscribeProviders();
+       }
+-      await core.stop();
+-      await stopCore();
+-      await Promise.all([...llmManagers.values()].map((m) => m.stop()));
+-      if (app) await app.stop();
+-      instanceLock?.release();
+-      instanceLock = null;
+     },
+     shutdown: (reason?: string) =>
+       beginShutdown(reason ?? '外部请求', { closeWeb: true, exit: false }),
+diff --git a/src/core/bus.ts b/src/core/bus.ts
+index 9fa6704..011b7d0 100644
+--- a/src/core/bus.ts
++++ b/src/core/bus.ts
+@@ -34,6 +34,9 @@ export class WakeBus {
+   private opts: WakeBusOptions;
+   private queue: Queued[] = [];
+   private paused = false;
++  /** Host-owned holds never replace manual pause or the Persona's gate. */
++  private readonly deliveryHolds = new Map<symbol, string>();
++  private readonly deliveryStateListeners = new Set<() => void>();
+   private gate: DeliveryGate | null = null;
+   /** 一次整批投递许可;人工暂停的优先级更高。 */
+   private bypassGateOnce = false;
+@@ -134,12 +137,12 @@ export class WakeBus {
+ 
+   /** 暂停或闸门(未获准整批放行)期间不投递。 */
+   private blocked(): boolean {
+-    return this.paused || (this.gate !== null && !this.bypassGateOnce);
++    return this.paused || this.deliveryHolds.size > 0 || (this.gate !== null && !this.bypassGateOnce);
+   }
+ 
+   /** 已获准投递的 preempt 与 interrupt 才通知主循环；暂停与闸门继续拥有更高优先级。 */
+   private notifyPreempt(trigger: TriggerMode, permitted: boolean): void {
+-    if ((trigger === 'preempt' || trigger === 'interrupt') && permitted && !this.paused) {
++    if ((trigger === 'preempt' || trigger === 'interrupt') && permitted && !this.paused && !this.deliveryHolds.size) {
+       this.log.emit('debug', trigger === 'preempt' ? '抢占:请求取消尚未外化的在途模型轮' : '打断:请求停止当前轮', { event: trigger });
+       this.preemptHandler?.(trigger);
+     }
+@@ -167,6 +170,32 @@ export class WakeBus {
+     if (!this.paused && (this.ready || this.queue.length > 0)) {
+       this.deliver(this.bypassGateOnce);
+     }
++    this.notifyDeliveryState();
++  }
++
++  /** Hold delivery for one host scope; only its idempotent disposer releases it. */
++  holdDelivery(name: string): () => void {
++    if (!name || typeof name !== 'string') throw new Error('Delivery hold requires a name.');
++    const token = Symbol(name);
++    this.deliveryHolds.set(token, name);
++    this.notifyDeliveryState();
++    return () => {
++      if (!this.deliveryHolds.delete(token)) return;
++      if (!this.blocked() && (this.ready || this.queue.length > 0)) this.deliver(this.bypassGateOnce);
++      this.notifyDeliveryState();
++    };
++  }
++
++  /** Observe permission changes without owning manual pause or Persona policy. */
++  onDeliveryStateChange(listener: () => void): () => void {
++    this.deliveryStateListeners.add(listener);
++    return () => { this.deliveryStateListeners.delete(listener); };
++  }
++
++  private notifyDeliveryState(): void {
++    for (const listener of [...this.deliveryStateListeners]) {
++      try { listener(); } catch (error) { this.log.warn('Delivery state observer failed', { err: String(error) }); }
++    }
+   }
+ 
+   isPaused(): boolean {
+@@ -185,6 +214,7 @@ export class WakeBus {
+     if (!hadGate && this.queue.length > 0) {
+       this.deliver(true);
+     }
++    this.notifyDeliveryState();
+   }
+ 
+   /**
+@@ -198,11 +228,16 @@ export class WakeBus {
+     if (deliverQueued && this.queue.length > 0) {
+       this.deliver(this.bypassGateOnce);
+     }
++    this.notifyDeliveryState();
+     return true;
+   }
+ 
+   isDeliveryBlocked(): boolean {
+-    return this.gate !== null;
++    return this.gate !== null || this.deliveryHolds.size > 0;
++  }
++
++  isDeliveryHeld(): boolean {
++    return this.deliveryHolds.size > 0;
+   }
+ 
+   /** 当前积压条数(WebUI 可见性;含尚未成文的投递成文项) */
+diff --git a/src/core/core.ts b/src/core/core.ts
+index a8d3cb7..f5d65c4 100644
+--- a/src/core/core.ts
++++ b/src/core/core.ts
+@@ -41,7 +41,7 @@ import { ToolCallLog } from './tool-log.ts';
+ import { Transcript } from './transcript.ts';
+ import { openRun, writeRunJson, type RunInfo } from './run.ts';
+ import { currentAnchors } from './log-context.ts';
+-import { MainLoop, type ContextFacts } from './loop.ts';
++import { MainLoop, type ContextFacts, type MainLoopDeps } from './loop.ts';
+ import type { ResponseClient } from './generation.ts';
+ import { HOST_LIFECYCLE_ENDED } from './markers.ts';
+ 
+@@ -54,14 +54,38 @@ const LOOP_DRAIN_MS = 1_000;
+  */
+ const HIDDEN_PUSH_NOTE_GAP_MS = 10 * 60_000;
+ 
++/** Public loop operations used by Core, Persona and WebUI. */
++export type CoreLoop = Pick<MainLoop, keyof MainLoop> & {
++  /** Reconcile host-owned tools and context after visibility changes. */
++  worldsChanged?(options?: { preservePending?: boolean }): void | Promise<void>;
++  withdrawPending?(worldId: string, cursor: number): Promise<boolean>;
++  promotePending?(worldId: string, cursor: number, trigger: 'flush' | 'preempt' | 'interrupt'): Promise<boolean>;
++  drainPendingEvents?(worldId: string, filter: (event: EventEnvelope) => boolean): Promise<EventEnvelope[]>;
++  recordDrained?(events: readonly EventEnvelope[]): Promise<void>;
++};
++
++export interface CoreWorldLifecycle {
++  start(world: World, host: WorldHost): Promise<void>;
++  stop(world: World): Promise<void>;
++}
++
+ export interface CoreDeps {
+   persona: Persona;
+   worlds: World[];
+   llm?: ResponseClient;
++  /** An execution host may expose its authoritative session through this view. */
++  session?: SessionLog;
++  /** Replaces model execution while retaining Core's event and World services. */
++  createLoop?(deps: MainLoopDeps): CoreLoop;
++  worldLifecycle?: CoreWorldLifecycle;
+   /** World 经宿主推出一条事件时调用:pushEvent、pushDeferred 各一次,pushCandidate 每条源事件一次。 */
+   onWorldPush?(worldId: string, type: string): void;
+   /** Core 在运行中卸载一个 World 时调用,见 {@link WorldFailure}。 */
+   onWorldFailed?(failure: WorldFailure): void;
++  /** An execution host released a World outside the assembly's own operations. */
++  onWorldDetached?(world: World, options: { retainInstance: boolean }): void;
++  /** The execution host restored a temporarily detached instance. */
++  onWorldRestored?(world: World): void;
+ }
+ 
+ export interface WorldStopFailure {
+@@ -95,7 +119,7 @@ export class Core<C extends CoreConfig = CoreConfig> {
+   readonly session: SessionLog;
+   readonly state: CoreState;
+   readonly timers: TimerStore;
+-  readonly loop: MainLoop;
++  readonly loop: CoreLoop;
+   readonly llm: ResponseClient;
+   /** 媒体库：字节保存在 data/media/，回执与事件只存引用。 */
+   readonly logBlobs: LogBlobStore;
+@@ -109,13 +133,18 @@ export class Core<C extends CoreConfig = CoreConfig> {
+   readonly sessionDecls = new Map<string, SessionDecl>();
+   /** 挂载表。与装配层共用同一个数组:运行中挂载/卸载就地增删。 */
+   private worlds: World[];
++  private readonly worldLifecycle: CoreWorldLifecycle;
+   private persona: Persona;
+   private readonly onWorldPush: (worldId: string, type: string) => void;
+   private readonly onWorldFailed: (failure: WorldFailure) => void;
++  private readonly onWorldDetached: (world: World, options: { retainInstance: boolean }) => void;
++  private readonly onWorldRestored: (world: World) => void;
+   private log: Logger;
+   private runPromise: Promise<void> | null = null;
+   /** start() 已跑过 World 启动循环;之后挂载的 World 立即 start,之前的等 start() 统一起。 */
+   private started = false;
++  /** Whole-Core teardown preserves archived deliveries for its next activation. */
++  private stopPrepared = false;
+   /** 每个声明当前运行的 fork 实例数，用于并发记账。 */
+   private readonly forkRunning = new Map<string, number>();
+   /** 各 World 在途的认知请求数；并发限制由 Persona 决定。 */
+@@ -126,6 +155,8 @@ export class Core<C extends CoreConfig = CoreConfig> {
+   private readonly hiddenPushes = new Map<string, { count: number; notedAtMs: number }>();
+   readonly providers: ProviderRegistry;
+   private readonly moduleHostLeases = new Map<World, { active: boolean }>();
++  private readonly worldDetachments = new WeakMap<World, Promise<void>>();
++  private readonly worldUnmounts = new Map<string, Promise<WorldStopFailure | null>>();
+   /** 运行中卸载的 World 尚未结束的 `stop()`。 */
+   private readonly failedStops = new Set<Promise<void>>();
+   /** unmountWorld 正在 `stop()` 的实例;期间读取失败只移出挂载表,停用或重启照常走完。 */
+@@ -149,16 +180,22 @@ export class Core<C extends CoreConfig = CoreConfig> {
+     this.store = new JsonlEventStore({ dataDir, run: this.run.id, log: this.log.child('store'), timezone: cfg.timezone });
+     // WakeBus 持有只读配置引用，使 batching 热更新对后续 push 生效。
+     this.bus = new WakeBus(cfg.batching, this.log.child('bus'));
+-    this.session = new SessionLog(dataDir, 'session-main.jsonl', () => nowIso(cfg.timezone));
++    this.session = deps.session ?? new SessionLog(dataDir, 'session-main.jsonl', () => nowIso(cfg.timezone));
+     this.transcript = new Transcript(join(this.run.dir, 'transcript.jsonl'), { run: this.run.id, timezone: cfg.timezone });
+     this.session.onAppend((record, index) => this.transcript.item(record, index));
+     this.state = new CoreState(dataDir);
+     // 先 load 再 attach：load 会整体替换状态对象，Persona首次调用 personaState() 时必须拿到已加载的状态。
+     this.state.load();
+     this.worlds = deps.worlds;
++    this.worldLifecycle = deps.worldLifecycle ?? {
++      start: async (world, host) => { await world.start(host); },
++      stop: async (world) => { await world.stop(); },
++    };
+     this.persona = deps.persona;
+     this.onWorldPush = deps.onWorldPush ?? (() => {});
+     this.onWorldFailed = deps.onWorldFailed ?? (() => {});
++    this.onWorldDetached = deps.onWorldDetached ?? (() => {});
++    this.onWorldRestored = deps.onWorldRestored ?? (() => {});
+     this.logBlobs = new LogBlobStore(dataDir);
+     this.providers = new ProviderRegistry(() => cfg.providers, {
+       // 同一部署根下的部署共享端点配置和状态目录。
+@@ -194,7 +231,7 @@ export class Core<C extends CoreConfig = CoreConfig> {
+       );
+     }
+ 
+-    this.loop = new MainLoop({
++    const loopDeps: MainLoopDeps = {
+       cfg,
+ 
+       llm: this.llm,
+@@ -215,9 +252,11 @@ export class Core<C extends CoreConfig = CoreConfig> {
+       state: this.state,
+       log: this.log.child('loop'),
+       tracker: this.sessions,
++      usageLog: this.usageLog,
+       toolLog: this.toolLog,
+       transcript: this.transcript,
+-    });
++    };
++    this.loop = deps.createLoop ? deps.createLoop(loopDeps) : new MainLoop(loopDeps);
+     this.bus.setPreemptHandler((trigger) => {
+       if (trigger === 'interrupt') this.loop.interruptCurrentRound();
+       else this.loop.abortCurrentRound();
+@@ -425,6 +464,7 @@ export class Core<C extends CoreConfig = CoreConfig> {
+     if (!this.worlds.some((m) => m.id === id)) throw new Error(`未挂载的 World: ${id}`);
+     this.state.data.worldVisibility[id] = visible;
+     this.state.save();
++    void this.loop.worldsChanged?.();
+     this.log.warn(`World 对 agent ${visible ? '可见' : '隐藏'}: ${id}`);
+   }
+ 
+@@ -495,6 +535,7 @@ export class Core<C extends CoreConfig = CoreConfig> {
+ 
+   /** World 宿主接口;每个 World 使用以自身 id 命名的子 logger。 */
+   private makeHost(mod: World): WorldHost {
++    this.worldDetachments.delete(mod);
+     const previous = this.moduleHostLeases.get(mod);
+     if (previous) previous.active = false;
+     const lease = { active: true };
+@@ -575,21 +616,30 @@ export class Core<C extends CoreConfig = CoreConfig> {
+       drainPendingEvents: async (filter) => {
+         if (!lease.active) return [];
+         const taken = this.bus
+-          .drainPending((it) => it.event?.origin === 'external' && filter(it.event))
++          .drainPending((it) => it.event?.origin === 'external' && it.event.source === mod.id && filter(it.event))
+           .map((it) => it.event as EventEnvelope);
+         // 被消费的事件须标记已处理，避免投递水位停留在此并在重启后补投。
+-        if (taken.length > 0) this.loop.acknowledgeDiscarded(taken);
+-        return taken;
++        if (taken.length > 0) {
++          if (this.loop.recordDrained) await this.loop.recordDrained(taken);
++          else this.loop.acknowledgeDiscarded(taken);
++        }
++        const admitted = await this.loop.drainPendingEvents?.(
++          mod.id, event => event.source === mod.id && event.origin === 'external' && filter(event),
++        ) ?? [];
++        return [...taken, ...admitted];
+       },
+       withdrawPending: async (cursor) => {
+         if (!lease.active) return false;
+         const [taken] = this.bus.drainPending((it) => it.event?.cursor === cursor && it.event.source === mod.id);
+-        if (!taken?.event) return false;
+-        this.loop.recordWithdrawn(taken.event);
++        if (!taken?.event) return await this.loop.withdrawPending?.(mod.id, cursor) ?? false;
++        await this.loop.recordWithdrawn(taken.event);
+         return true;
+       },
+-      promotePending: async (cursor, trigger) => lease.active
+-        && this.bus.promote((it) => it.event?.cursor === cursor && it.event.source === mod.id, trigger),
++      promotePending: async (cursor, trigger) => {
++        if (!lease.active) return false;
++        if (this.bus.promote((it) => it.event?.cursor === cursor && it.event.source === mod.id, trigger)) return true;
++        return await this.loop.promotePending?.(mod.id, cursor, trigger) ?? false;
++      },
+       modelFacts: this.modelFacts(),
+       blob: (handle) => this.resolveBlob(handle),
+       reportUsage: (usage, opts) => {
+@@ -624,6 +674,7 @@ export class Core<C extends CoreConfig = CoreConfig> {
+ 
+   /** 启动全部已挂载 World。`start()` 抛错的 World 移出挂载表并列入返回值,其余照常启动。 */
+   async start(): Promise<WorldStartFailure[]> {
++    this.stopPrepared = false;
+     // 构造期已加载状态；此处再次 load 会覆盖装配后、启动前的修改。
+     const repair = this.session.load();
+     if (repair) {
+@@ -635,11 +686,12 @@ export class Core<C extends CoreConfig = CoreConfig> {
+     const failed: WorldStartFailure[] = [];
+     for (const mod of [...this.worlds]) {
+       try {
+-        await mod.start(this.makeHost(mod));
++        await this.worldLifecycle.start(mod, this.makeHost(mod));
+       } catch (error) {
+         const lease = this.moduleHostLeases.get(mod);
+         if (lease) lease.active = false;
+-        this.worlds.splice(this.worlds.indexOf(mod), 1);
++        const at = this.worlds.indexOf(mod);
++        if (at >= 0) this.worlds.splice(at, 1);
+         this.log.emit('error', `World 启动失败,已跳过: ${mod.id}`, { event: 'world-start-failed', err: error });
+         failed.push({ worldId: mod.id, detail: error instanceof Error ? error.message : String(error) });
+         continue;
+@@ -670,7 +722,7 @@ export class Core<C extends CoreConfig = CoreConfig> {
+     if (this.worlds.some((m) => m.id === mod.id)) throw new Error(`World 已挂载: ${mod.id}`);
+     if (this.started) {
+       try {
+-        await mod.start(this.makeHost(mod));
++        await this.worldLifecycle.start(mod, this.makeHost(mod));
+       } catch (error) {
+         const lease = this.moduleHostLeases.get(mod);
+         if (lease) lease.active = false;
+@@ -679,34 +731,99 @@ export class Core<C extends CoreConfig = CoreConfig> {
+       this.log.info(`World 已启动: ${mod.id}`);
+     }
+     this.worlds.push(mod);
++    if (this.started) {
++      try { await this.loop.reloadSystemPrefix(); }
++      catch (error) {
++        // Native tool publication belongs to mounting too. A World whose
++        // start succeeded still owns a live host/fiber if publication fails.
++        // Revoke that ownership before allowing a different mount or retry.
++        const failure = await this.unmountInstance(mod);
++        if (failure) throw new AggregateError([error, new Error(failure.detail)], 'World mounting and cleanup failed.');
++        throw error;
++      }
++    }
++  }
++
++  /** A lifecycle owner uses a fresh host lease for each activation. */
++  renewWorldHost(mod: World): WorldHost {
++    if (this.stopPrepared) throw new Error(HOST_LIFECYCLE_ENDED);
++    if (this.worlds.some(world => world.id === mod.id && world !== mod)) {
++      throw new Error(`World ${mod.id} is owned by another instance`);
++    }
++    return this.makeHost(mod);
++  }
++
++  /** Publish an instance after the lifecycle owner has restarted it successfully. */
++  async restoreWorld(mod: World): Promise<void> {
++    if (this.stopPrepared) throw new Error(HOST_LIFECYCLE_ENDED);
++    if (!this.moduleHostLeases.get(mod)?.active) throw new Error(HOST_LIFECYCLE_ENDED);
++    if (this.worlds.some(world => world.id === mod.id && world !== mod)) {
++      throw new Error(`World ${mod.id} is owned by another instance`);
++    }
++    if (!this.worlds.includes(mod)) this.worlds.push(mod);
++    this.onWorldRestored(mod);
++    await this.loop.worldsChanged?.();
+     if (this.started) await this.loop.reloadSystemPrefix();
+   }
+ 
+-  /** 停止 World 后使租约失效、移出挂载表并重建前缀；停止失败或超时仍继续卸载。 */
++  /** Revoke a World without calling its lifecycle owner, including during partial startup. */
++  detachWorld(mod: World, { notify = true, retainInstance = false }: {
++    notify?: boolean; retainInstance?: boolean;
++  } = {}): Promise<void> {
++    const previous = this.worldDetachments.get(mod);
++    if (previous) return previous;
++    const lease = this.moduleHostLeases.get(mod);
++    if (lease) lease.active = false;
++    const index = this.worlds.indexOf(mod);
++    if (index >= 0) this.worlds.splice(index, 1);
++    const preservePending = this.stopPrepared;
++    if (!preservePending) {
++      const pending = this.bus.drainPending((item) =>
++        (item.event?.source ?? item.deferred?.source ?? item.candidate?.source) === mod.id);
++      const archived = pending.flatMap((item) => item.event ? [item.event] : item.candidate?.sourceEvents ?? []);
++      if (archived.length) this.loop.acknowledgeDiscarded(archived);
++    }
++    const operation = Promise.resolve().then(async () => {
++      if (!preservePending && notify && index >= 0) this.onWorldDetached(mod, { retainInstance });
++      // Tool revocation must finish before the lifecycle owner stops its resources.
++      await this.loop.worldsChanged?.({ preservePending });
++      if (!preservePending && this.started && index >= 0) await this.loop.reloadSystemPrefix();
++    });
++    this.worldDetachments.set(mod, operation);
++    return operation;
++  }
++
++  /** 撤销 World 的宿主和工具，再停止实例；停止失败或超时仍继续卸载。 */
+   async unmountWorld(id: string): Promise<WorldStopFailure | null> {
++    const pending = this.worldUnmounts.get(id);
++    if (pending) return pending;
+     const index = this.worlds.findIndex((m) => m.id === id);
+     if (index < 0) throw new Error(`未挂载的 World: ${id}`);
+     const mod = this.worlds[index];
++    const operation = this.unmountInstance(mod);
++    this.worldUnmounts.set(id, operation);
++    try { return await operation; }
++    finally { if (this.worldUnmounts.get(id) === operation) this.worldUnmounts.delete(id); }
++  }
++
++  private async unmountInstance(mod: World): Promise<WorldStopFailure | null> {
++    const id = mod.id;
+     let failure: WorldStopFailure | null = null;
++    try { await this.detachWorld(mod, { notify: false }); }
++    catch (error) { failure = { worldId: id, detail: error instanceof Error ? error.message : String(error) }; }
+     if (this.started) {
+       this.stopping.add(mod);
+       try {
+-        await withDeadline(mod.stop(), MODULE_STOP_MS);
++        await withDeadline(this.worldLifecycle.stop(mod), MODULE_STOP_MS);
+       } catch (e) {
+         const detail = e instanceof Error ? e.message : String(e);
+         this.log.warn(`World 停止失败: ${mod.id}`, { err: detail });
+-        failure = { worldId: mod.id, detail };
++        failure = { worldId: mod.id, detail: failure ? `${failure.detail}; ${detail}` : detail };
+       } finally {
+         this.stopping.delete(mod);
+       }
+     }
+-    const lease = this.moduleHostLeases.get(mod);
+-    if (lease) lease.active = false;
+-    // stop 期间同一实例可能已被另一次卸载移出
+-    const at = this.worlds.indexOf(mod);
+-    if (at >= 0) this.worlds.splice(at, 1);
+     this.log.info(`World 已卸载: ${mod.id}`);
+-    if (this.started) await this.loop.reloadSystemPrefix();
+     return failure;
+   }
+ 
+@@ -717,10 +834,11 @@ export class Core<C extends CoreConfig = CoreConfig> {
+   private failWorld(mod: World, detail: string): void {
+     const lease = this.moduleHostLeases.get(mod);
+     if (lease) lease.active = false;
+-    this.worlds.splice(this.worlds.indexOf(mod), 1);
++    const index = this.worlds.indexOf(mod);
++    if (index >= 0) this.worlds.splice(index, 1);
+     if (this.stopping.has(mod)) return;
+     this.log.emit('error', `World 读取失败,已卸载: ${mod.id}`, { event: 'world-failed', data: { detail } });
+-    const stopped = withDeadline(Promise.resolve().then(() => mod.stop()), MODULE_STOP_MS).then(
++    const stopped = withDeadline(Promise.resolve().then(() => this.worldLifecycle.stop(mod)), MODULE_STOP_MS).then(
+       () => {},
+       (e) => this.log.warn(`World 停止失败: ${mod.id}`, { err: e instanceof Error ? e.message : String(e) }),
+     );
+@@ -729,8 +847,14 @@ export class Core<C extends CoreConfig = CoreConfig> {
+     this.onWorldFailed({ worldId: mod.id, detail });
+   }
+ 
++  /** Mark host teardown before concurrent plugin disposers revoke individual Worlds. */
++  prepareStop(): void {
++    this.stopPrepared = true;
++  }
++
+   /** 先终止主循环，再并发停止 World；各步骤有独立期限，失败写入返回结果。 */
+   async stop(): Promise<WorldStopFailure[]> {
++    this.prepareStop();
+     this.started = false;
+     this.loop.stop();
+     this.timers.stop();
+@@ -749,9 +873,9 @@ export class Core<C extends CoreConfig = CoreConfig> {
+     } else {
+       this.loop.seal();
+     }
+-    const moduleFailures = (await Promise.all(this.worlds.map(async (mod): Promise<WorldStopFailure | null> => {
++    const moduleFailures = (await Promise.all([...this.worlds].map(async (mod): Promise<WorldStopFailure | null> => {
+       try {
+-        await withDeadline(mod.stop(), MODULE_STOP_MS);
++        await withDeadline(this.worldLifecycle.stop(mod), MODULE_STOP_MS);
+         return null;
+       } catch (e) {
+         const detail = e instanceof Error ? e.message : String(e);
+diff --git a/src/core/loop.ts b/src/core/loop.ts
+index 306de45..c306c92 100644
+--- a/src/core/loop.ts
++++ b/src/core/loop.ts
+@@ -44,6 +44,7 @@ import type { WakeBus } from './bus.ts';
+ import type { SessionLog } from './session.ts';
+ import type { CoreState } from './state.ts';
+ import type { SessionHandle, SessionTracker } from './sessions.ts';
++import type { UsageLog } from './usage-log.ts';
+ import { collectWorldContexts, joinSegments, type EnvPromptDirs } from './prefix.ts';
+ import { recordToolCall, type ToolCallLog } from './tool-log.ts';
+ import type { Transcript } from './transcript.ts';
+@@ -134,6 +135,8 @@ export interface MainLoopDeps {
+   log: Logger;
+   /** session观察注册表(web面板数据源;可选,不接不影响主循环) */
+   tracker?: SessionTracker;
++  /** A durable execution host registers its replay cursor for usage clearing. */
++  usageLog?: UsageLog;
+   /** 模型工具调用流水(可选;不接则不落盘) */
+   toolLog?: ToolCallLog;
+   /** 主 session 的只追加副本;交接、清空、前缀重载在这里留边界记录 */
+diff --git a/src/core/usage-log.ts b/src/core/usage-log.ts
+index 96446c1..e0cbe23 100644
+--- a/src/core/usage-log.ts
++++ b/src/core/usage-log.ts
+@@ -1,7 +1,15 @@
+ /** Append-only usage ledger. Failed writes remain queued and are reported to the operator. */
+-import { appendFileSync, closeSync, existsSync, mkdirSync, openSync, readSync, writeFileSync } from 'node:fs';
++import { appendFileSync, closeSync, existsSync, mkdirSync, openSync, readFileSync, readSync, renameSync, unlinkSync, writeFileSync } from 'node:fs';
+ import { dirname } from 'node:path';
+ import type { UsageRecord } from './types.ts';
++import { isDeepStrictEqual } from 'node:util';
++
++/** Local run anchors and display labels can change when one durable attempt is replayed. */
++function semanticRecord(record: UsageRecord): unknown {
++  const { run, round, label, ...semantic } = record;
++  return { ...semantic, recordId: record.recordId ?? record.attempt?.id,
++    ts: Number.isFinite(Date.parse(record.ts)) ? new Date(record.ts).toISOString() : record.ts };
++}
+ 
+ /** The ledger is read in chunks so its size is not bounded by V8's maximum string length. */
+ const READ_CHUNK_BYTES = 4 * 1024 * 1024;
+@@ -31,20 +39,81 @@ export class UsageLog {
+   private pending: UsageRecord[] = [];
+   private error: string | null = null;
+   private reconcile = false;
++  private identities: Map<string, UsageRecord> | null = null;
++  private clearError: string | null = null;
++  private cleared: Map<string, number> | null = null;
++  private readonly replaySources = new Map<string, {
++    cursor: () => number;
++    sequenceOf: (record: UsageRecord) => number | undefined;
++  }>();
+   constructor(private readonly file: string, private readonly report: (message: string) => void = console.error) {}
+ 
++  /** Register one durable source, not every request identity. Disposal is owner-scoped. */
++  registerReplaySource(source: string, hooks: { cursor: () => number; sequenceOf: (record: UsageRecord) => number | undefined }): () => void {
++    this.loadCleared();
++    if (this.replaySources.has(source)) throw new Error(`Usage replay source already registered: ${source}`);
++    this.replaySources.set(source, hooks);
++    return () => { if (this.replaySources.get(source) === hooks) this.replaySources.delete(source); };
++  }
++
++  private loadCleared(): Map<string, number> {
++    if (this.cleared) return this.cleared;
++    const file = this.file + '.replay-clear.json';
++    const watermarks = new Map<string, number>();
++    if (existsSync(file)) {
++      const data = JSON.parse(readFileSync(file, 'utf8')) as { version: number; sources: Array<[string, number]> };
++      if (data.version !== 1 || !Array.isArray(data.sources)) throw new Error('Invalid usage replay clear watermark.');
++      for (const item of data.sources) {
++        if (!Array.isArray(item) || item.length !== 2 || typeof item[0] !== 'string' || !Number.isSafeInteger(item[1]) || item[1] < -1) {
++          throw new Error('Invalid usage replay clear watermark source.');
++        }
++        watermarks.set(item[0], item[1]);
++      }
++    }
++    return this.cleared = watermarks;
++  }
++
++  private wasCleared(record: UsageRecord): boolean {
++    const cleared = this.loadCleared();
++    for (const [source, hooks] of this.replaySources) {
++      const seq = hooks.sequenceOf(record);
++      if (seq !== undefined && seq <= (cleared.get(source) ?? -1)) return true;
++    }
++    return false;
++  }
++
+   append(rec: UsageRecord): void {
+-    this.pending.push(structuredClone({ ...rec, version: 2, recordId: rec.recordId ?? rec.attempt?.id ?? crypto.randomUUID() }));
++    if (this.wasCleared(rec)) return;
++    const record = structuredClone({ ...rec, version: 2 as const, recordId: rec.recordId ?? rec.attempt?.id ?? crypto.randomUUID() });
++    this.identities ??= new Map(this.readAll().map(row => [row.recordId ?? row.attempt?.id ?? '', row]));
++    const existing = this.identities.get(record.recordId);
++    if (existing) {
++      if (!isDeepStrictEqual(semanticRecord(existing), semanticRecord(record))) {
++        throw Object.assign(new Error('Usage record identity conflicts with existing observed consumption.'), { code: 'USAGE_RECORD_CONFLICT' });
++      }
++      this.flush(); return;
++    }
++    this.identities.set(record.recordId, record);
++    this.pending.push(record);
+     this.flush();
+   }
+ 
+   flush(): void {
++    // Includes a pre-clear attempt which only becomes billable at turn/end.
++    this.pending = this.pending.filter(record => !this.wasCleared(record));
+     if (!this.pending.length) return;
+     try {
+       mkdirSync(dirname(this.file), { recursive: true });
+       if (this.reconcile) {
+-        const ids = new Set(this.readDisk().map(record => record.recordId ?? record.attempt?.id));
+-        this.pending = this.pending.filter(record => !ids.has(record.recordId));
++        const records = new Map(this.readDisk().map(record => [record.recordId ?? record.attempt?.id, record]));
++        this.pending = this.pending.filter(record => {
++          const existing = records.get(record.recordId);
++          if (!existing) return true;
++          if (!isDeepStrictEqual(semanticRecord(existing), semanticRecord(record))) {
++            throw new Error('USAGE_RECORD_CONFLICT: persisted consumption differs from the queued record.');
++          }
++          return false;
++        });
+         this.reconcile = false;
+       }
+       while (this.pending.length) {
+@@ -56,7 +125,7 @@ export class UsageLog {
+     } catch (error) { this.reconcile = true; this.note(error); }
+   }
+ 
+-  status(): { pending: number; error: string | null } { return { pending: this.pending.length, error: this.error }; }
++  status(): { pending: number; error: string | null } { return { pending: this.pending.length, error: this.clearError ?? this.error }; }
+ 
+   private note(error: unknown): void {
+     const message = `Usage ledger ${this.file}: ${String(error)}`;
+@@ -94,10 +163,36 @@ export class UsageLog {
+ 
+   clear(): number {
+     const count = this.count();
+-    mkdirSync(dirname(this.file), { recursive: true });
+-    writeFileSync(this.file, '', 'utf8');
+-    this.pending = [];
+-    this.error = null;
+-    return count;
++    let temporary: string | undefined;
++    try {
++      const watermarks = new Map(this.loadCleared());
++      for (const [source, hooks] of this.replaySources) {
++        const seq = hooks.cursor();
++        if (!Number.isSafeInteger(seq) || seq < -1) throw new Error('Invalid usage replay source cursor.');
++        watermarks.set(source, Math.max(watermarks.get(source) ?? -1, seq));
++      }
++      mkdirSync(dirname(this.file), { recursive: true });
++      // Persist the replay barrier first. A crash after truncation cannot revive
++      // old usage; a failed watermark write leaves the old ledger untouched.
++      if (watermarks.size) {
++        temporary = this.file + '.replay-clear.' + crypto.randomUUID() + '.tmp';
++        writeFileSync(temporary, JSON.stringify({ version: 1, sources: [...watermarks] }) + '\n', { encoding: 'utf8', flag: 'wx' });
++        renameSync(temporary, this.file + '.replay-clear.json');
++        temporary = undefined;
++      }
++      this.cleared = watermarks;
++      writeFileSync(this.file, '', 'utf8');
++      this.pending = [];
++      this.identities = null;
++      this.reconcile = false;
++      this.error = null;
++      this.clearError = null;
++      return count;
++    } catch (error) {
++      this.note(error); this.clearError = this.error;
++      throw error;
++    } finally {
++      if (temporary) try { unlinkSync(temporary); } catch { /* preserve the original clear failure */ }
++    }
+   }
+ }
+diff --git a/src/extensions.ts b/src/extensions.ts
+index 94d158a..7deac7b 100644
+--- a/src/extensions.ts
++++ b/src/extensions.ts
+@@ -219,10 +219,10 @@ export type BotPackageLocation =
+  * `index.ts` 就是仓内包;否则 `extensions/package.json` 的 dependencies 里有这个名字,且它的
+  * manifest 是 `kind: "bot"`。都没有就报错,两处路径都列出来。
+  */
+-export function locateBotPackage(repoRoot: string, ref: string, treeDir: string): BotPackageLocation {
++export function locateBotPackage(repoRoot: string, ref: string, treeDir: string, opts: { dir?: string } = {}): BotPackageLocation {
+   const treeEntry = join(treeDir, 'index.ts');
+   if (existsSync(treeEntry)) return { source: 'tree', pkgDir: treeDir, entry: treeEntry };
+-  const dir = extensionsDir(repoRoot);
++  const dir = opts.dir ? resolve(opts.dir) : extensionsDir(repoRoot);
+   if (!readInstalled(dir).some((p) => p.name === ref)) {
+     throw new Error(`找不到 bot 代码包「${ref}」:仓内没有 ${treeEntry},${dir} 下也没装叫这个名字的扩展。`);
+   }
+@@ -296,10 +296,10 @@ function writeWorldOwners(file: string, owners: Record<string, string>, log?: Lo
+  */
+ export async function loadExtensions(
+   repoRoot: string,
+-  opts: { reserved?: Iterable<string>; reservedProviders?: Iterable<string>; activeBot?: ActiveBotPackage; log?: Logger } = {},
++  opts: { dir?: string; reserved?: Iterable<string>; reservedProviders?: Iterable<string>; activeBot?: ActiveBotPackage; log?: Logger } = {},
+ ): Promise<ExtensionSet> {
+   registerFrameworkResolver();
+-  const dir = extensionsDir(repoRoot);
++  const dir = opts.dir ? resolve(opts.dir) : extensionsDir(repoRoot);
+   const taken: Record<Exclude<ExtensionKind, 'bot'>, Set<string>> = {
+     world: new Set(opts.reserved ?? []),
+     provider: new Set(opts.reservedProviders ?? []),
+diff --git a/src/providers/registry.ts b/src/providers/registry.ts
+index 1131d75..0bc3080 100644
+--- a/src/providers/registry.ts
++++ b/src/providers/registry.ts
+@@ -29,30 +29,68 @@ export async function discoverProviderModules(
+ 
+ export const providerModules = await discoverProviderModules();
+ const byId = new Map(providerModules.map((module) => [module.id, module]));
++interface ModuleRegistration {
++  id: string;
++  module: ProviderModule;
++  active: boolean;
++}
++const registrations = new Map<string, ModuleRegistration>();
+ 
+ /**
+  * 追加扩展带来的 provider 模块。就地改这一个数组,不换引用:`ProviderRegistry` 与
+  * `ProviderSettings` 的默认参数引用的就是它,而两者都在启动器注册完之后才构造。
+  * id 撞车直接抛:一个 kind 对应哪份实现不能有歧义。
+  */
+-export function registerProviderModules(extra: readonly ProviderModule[]): void {
++export function registerProviderModules(extra: readonly ProviderModule[]): () => void {
++  const ids = new Set<string>();
+   for (const module of extra) {
+-    if (byId.has(module.id)) throw new Error(`Provider module id 已被占用: ${module.id}`);
++    if (ids.has(module.id) || byId.has(module.id)) throw new Error(`Provider module id 已被占用: ${module.id}`);
++    ids.add(module.id);
++  }
++  const owned = extra.map(module => ({ id: module.id, module, active: true }));
++  for (const registration of owned) {
++    const { id, module } = registration;
++    registrations.set(id, registration);
+     byId.set(module.id, module);
+     providerModules.push(module);
+   }
++  return () => {
++    for (const registration of owned) {
++      if (!registration.active) continue;
++      registration.active = false;
++      const { id, module } = registration;
++      if (registrations.get(id) !== registration) continue;
++      registrations.delete(id);
++      if (byId.get(id) !== module) continue;
++      byId.delete(id);
++      providerModules.splice(providerModules.indexOf(module), 1);
++    }
++  };
+ }
+ 
+-/** Withdraws a module before asynchronous package removal; failed removal restores the same registration. */
++/** Failed package removal restores the module while its original registration is still owned. */
+ export async function removeProviderModule(id: string, remove: () => Promise<string>): Promise<string> {
+   const module = providerModule(id);
++  const registration = registrations.get(id);
+   const index = providerModules.indexOf(module);
+   byId.delete(id);
+   providerModules.splice(index, 1);
+-  try { return await remove(); }
++  try {
++    const result = await remove();
++    if (registration) {
++      registration.active = false;
++      if (registrations.get(id) === registration) registrations.delete(id);
++    }
++    return result;
++  }
+   catch (error) {
+-    byId.set(id, module);
+-    providerModules.splice(index, 0, module);
++    const stillOwned = registration
++      ? registration.active && registrations.get(id) === registration
++      : !registrations.has(id);
++    if (stillOwned && !byId.has(id)) {
++      byId.set(id, module);
++      providerModules.splice(index, 0, module);
++    }
+     throw error;
+   }
+ }
+diff --git a/src/providers/transport/native-input.ts b/src/providers/transport/native-input.ts
+index 34f7419..ca7a37c 100644
+--- a/src/providers/transport/native-input.ts
++++ b/src/providers/transport/native-input.ts
+@@ -69,13 +69,15 @@ export function nativeChatInput(request: Request, options: GenerateOptions): Nat
+       (target.tool_calls ??= []).push({ id: item.call_id, type: 'function', function: { name: item.name, arguments: item.arguments } });
+     } else if (item.type === 'function_call_output') {
+       assistant = null;
+-      messages.push({ role: 'tool', content: itemText(item), parts: nativeParts(entry), tool_call_id: item.call_id, blobs: entry.context.blobs });
++      messages.push({ role: 'tool', content: itemText(item), parts: nativeParts(entry), tool_call_id: item.call_id, blobs: entry.context.blobs,
++        ...(entry.context.head ? { head: true } : {}) });
+     } else if (item.type === 'message') {
+       if (item.role === 'assistant') {
+         ensureAssistant(entry).content += itemText({ ...item, type: 'message' });
+       } else {
+         assistant = null;
+-        messages.push({ role: item.role === 'developer' ? 'system' : item.role, content: itemText({ ...item, type: 'message' }), parts: nativeParts(entry), blobs: entry.context.blobs });
++        messages.push({ role: item.role === 'developer' ? 'system' : item.role, content: itemText({ ...item, type: 'message' }), parts: nativeParts(entry), blobs: entry.context.blobs,
++          ...(entry.context.head ? { head: true } : {}) });
+       }
+     } else throw new Error(`Native Chat provider cannot replay ${item.type}`);
+   }
+diff --git a/src/providers/webui/hub.ts b/src/providers/webui/hub.ts
+index 3866f3c..67e333a 100644
+--- a/src/providers/webui/hub.ts
++++ b/src/providers/webui/hub.ts
+@@ -28,12 +28,31 @@ export interface ConnectionSave {
+   expectedRevision?: string;
+   secretValue?: string;
+ }
++export type ProviderHubChange =
++  | { readonly type: 'save'; readonly name: string; readonly previousName?: string }
++  | { readonly type: 'activate' | 'delete'; readonly name: string }
++  | { readonly type: 'module-remove'; readonly kind: string };
++type ProviderHubChangeListener = (change: ProviderHubChange) => void | Promise<void>;
+ export class ProviderHub {
+   private readonly revisions = new Map<string, string>();
++  private readonly changeListeners = new Set<ProviderHubChangeListener>();
+   constructor(private readonly config: CoreConfig, private readonly registry: ProviderRegistry,
+     private readonly settings: ProviderSettings, private readonly file: string,
+     private readonly root: string, private readonly modules: readonly ProviderModule[] = providerModules) {}
+ 
++  /** Observe committed connection changes after their write lock is released. */
++  onChange(listener: ProviderHubChangeListener): () => void {
++    this.changeListeners.add(listener);
++    return () => { this.changeListeners.delete(listener); };
++  }
++  private changed(change: ProviderHubChange): void {
++    const committed = Object.freeze(change);
++    const report = () => { console.error('ProviderHub change listener failed.'); };
++    for (const listener of [...this.changeListeners]) {
++      try { void Promise.resolve(listener(committed)).catch(report); }
++      catch { report(); }
++    }
++  }
+   private path(name: string): string {
+     const path = resolve(this.root, name);
+     if (!name || dirname(path) !== resolve(this.root)) throw hubError(S => S.invalidIdentifier);
+@@ -176,14 +195,18 @@ export class ProviderHub {
+   }
+   /** Checks persisted endpoints and withdraws the module before yielding to the package manager. */
+   removeModule(id: string, remove: () => Promise<string>): Promise<string> {
+-    return this.locked(() => {
++    const removal = this.locked(() => {
+       const users = Object.entries(this.config.providers).filter(([, entry]) => entry.kind === id).map(([name]) => name);
+       if (users.length) throw hubError(S => S.kindInUse(users.join(', ')), 409);
+       return removeProviderModule(id, remove);
+     });
++    return removal.then(result => {
++      this.changed({ type: 'module-remove', kind: id });
++      return result;
++    });
+   }
+   save(original: string | null, input: ConnectionSave, language: Language) {
+-    return this.locked(() => {
++    const saved = this.locked(() => {
+       const { name } = input;
+       if (typeof name !== 'string') throw hubError(S => S.nameRequired);
+       const prior = original ? this.config.providers[original] : undefined;
+@@ -260,6 +283,8 @@ export class ProviderHub {
+       this.refresh();
+       return this.detail(name, language);
+     });
++    this.changed({ type: 'save', name: input.name, ...(original ? { previousName: original } : {}) });
++    return saved;
+   }
+   activate(name: string, language: Language): void {
+     this.locked(() => {
+@@ -270,6 +295,7 @@ export class ProviderHub {
+       updateJsonObject(this.file, raw => { raw.activeProvider = name; });
+       this.config.activeProvider = name;
+     });
++    this.changed({ type: 'activate', name });
+   }
+   delete(name: string, revision: string): void {
+     this.locked(() => {
+@@ -284,6 +310,7 @@ export class ProviderHub {
+       delete this.config.providers[name];
+       rmSync(tomb, { recursive: true, force: true });
+     });
++    this.changed({ type: 'delete', name });
+   }
+   /**
+    * Probe (`test`) or list models (`models`). Without `draft`, the saved endpoint's instance answers.
+diff --git a/src/web/client/features/live/index.ts b/src/web/client/features/live/index.ts
+index 3d42aec..4866b2b 100644
+--- a/src/web/client/features/live/index.ts
++++ b/src/web/client/features/live/index.ts
+@@ -34,6 +34,8 @@ import { applyDisplayName, createConnectionButton, createStatusBand, phaseLabel,
+ import { S } from './strings.ts';
+ import { createTimeline } from './timeline.ts';
+ import type { UsageAggregate } from '../usage/types.ts';
++import { S as UsageS } from '../usage/strings.ts';
++import { createPersonaSwitch } from '../../ui/persona-switch.ts';
+ 
+ const DEBUG_WS_PATH = '/ws/debug';
+ const SESSIONS_WS_PATH = '/ws/sessions';
+@@ -184,7 +186,8 @@ function mountLive(ctx: FeatureContext, env: SocketEnv): Disposable | void {
+       cost.hidden = !t;
+       if (!t) return;
+       const partial = (t.unpricedCalls || 0) > 0 ? '+' : '';
+-      cost.textContent = S.todayCost(ui.fmt.money(t.cost ?? 0, d.currency || 'USD') + partial);
++      const unknown = (t.unpricedCalls || 0) > 0 && !(t.pricedCalls || 0) && !t.cost;
++      cost.textContent = S.todayCost(unknown ? UsageS.unknown : ui.fmt.money(t.cost ?? 0, d.currency || 'USD') + partial);
+       cost.title = S.todayCostTitle(t.calls || 0);
+     } catch (err) {
+       if ((err as { name?: string } | null)?.name === 'AbortError' || seq !== costSeq) return;
+@@ -203,7 +206,17 @@ function mountLive(ctx: FeatureContext, env: SocketEnv): Disposable | void {
+ 
+   // 右边三项是一组:放不下时整组换行
+   const right = ui.h('div', 'live-summary-right');
+-  right.append(connection.el, cost, netEl);
++  // Persona switcher (inline variant) sits at the leading edge of the status strip.
++  const personaSwitch = createPersonaSwitch({
++    variant: 'inline',
++    doc,
++    ui,
++    signal: ctx.signal,
++    onError: (err) => ctx.onError(err),
++  });
++  // Probe once on mount; silently hides itself if world:native-engine is absent (404).
++  personaSwitch.setEnabled(true);
++  right.append(personaSwitch.el, connection.el, cost, netEl);
+   summary.append(status.el, right);
+   const sessions = ui.h('div', 'live-sessions');
+   sessions.append(ui.h('span', 'live-sessions-label', S.sessionsLabel), sessionBand.el);
+diff --git a/src/web/client/features/prompts/index.ts b/src/web/client/features/prompts/index.ts
+index 90ecea3..f161f31 100644
+--- a/src/web/client/features/prompts/index.ts
++++ b/src/web/client/features/prompts/index.ts
+@@ -16,6 +16,7 @@ import type { PromptDoc } from './view.ts';
+ import { prefersStill } from '../../core/motion.ts';
+ 
+ interface PrefixSegment { title: string; text: string; sourceKey?: string }
++interface PromptSources { prompts: PromptDoc[]; application?: 'manual' | 'next-turn' }
+ interface Section {
+   segment: PrefixSegment;
+   /** The template this section edits; absent for generated text and for a source Core names but does not list. */
+@@ -24,6 +25,8 @@ interface Section {
+   label: HTMLElement;
+   toggle: HTMLButtonElement;
+   badge: HTMLElement;
++  /** Live per-section character count shown in the left-rail flag. */
++  charCount: HTMLElement;
+   /** Spans the section's height in the label column so the variable list stays in view while it scrolls. */
+   cell: HTMLElement;
+   vars: HTMLElement;
+@@ -61,6 +64,8 @@ export async function mountPrompts(ctx: FeatureContext): Promise<void> {
+   const sections: Section[] = [];
+   let segments: PrefixSegment[] = [];
+   let pendingApply = false;
++  let application: 'manual' | 'next-turn' = 'manual';
++  let applyButton: HTMLButtonElement | undefined;
+   let savePromise: Promise<boolean> | null = null;
+   let changingSession = false;
+   const toolbar = ui.h('div', 'prompt-toolbar');
+@@ -74,11 +79,26 @@ export async function mountPrompts(ctx: FeatureContext): Promise<void> {
+   const dividers = ui.h('div', 'prefix-dividers');
+   stage.append(flags, grip, host, dividers);
+   const full = ui.h('pre', 'mono prefix-full');
+-  // Folded like the palette on 开始: a rule above, the prompt in a white box once opened.
+-  const preview = ui.foldSheet('full-prompt', { title: S.fullPreview });
++  // Open by default so the full assembled prompt is immediately visible.
++  const preview = ui.foldSheet('full-prompt', { title: S.fullPreview, defaultOpen: true });
+   preview.el.classList.add('fold-plain', 'prefix-preview');
+-  preview.body.append(full);
+-  root.append(pageIntro(ui, S.title, S.introDesc), toolbar, stage, preview.el);
++  const previewStats = ui.msgline('');
++  const copyFull = ui.copyButton(() => full.textContent ?? '', { label: '复制完整 System', size: 'sm' });
++  const previewBar = ui.h('div', 'prompt-preview-bar');
++  previewBar.append(previewStats, copyFull);
++  preview.body.append(previewBar, full);
++  const intro = pageIntro(ui, S.title, S.introDesc);
++  const introDescription = intro.querySelector<HTMLElement>('.pagedesc');
++  root.append(intro, toolbar, stage, preview.el);
++
++  function applicationPolicy(value: PromptSources['application']): void {
++    application = value === 'next-turn' ? 'next-turn' : 'manual';
++    if (introDescription) introDescription.textContent = application === 'next-turn' ? S.nextTurnIntro : S.introDesc;
++    if (applyButton) {
++      if (application === 'next-turn') applyButton.remove();
++      else if (!applyButton.isConnected) actions.append(applyButton);
++    }
++  }
+ 
+   function say(text: string, bad = false): void {
+     status.className = bad ? 'msgline bad prompt-status' : 'msgline prompt-status';
+@@ -91,12 +111,22 @@ export async function mountPrompts(ctx: FeatureContext): Promise<void> {
+   }
+   function state(): void {
+     controls();
+-    say(dirty.size ? S.dirtyCount(dirty.size) : pendingApply ? S.pendingApply : S.prefixStats(segments.length, estTok(segments.map((s) => s.text).join('')).toLocaleString()));
+-    for (const { doc, toggle, badge } of sections) {
++    const fullText = segments.map((s) => s.text).join('');
++    say(dirty.size ? S.dirtyCount(dirty.size) : pendingApply
++      ? application === 'next-turn' ? S.savedNextTurn : S.pendingApply
++      : S.prefixStats(segments.length, estTok(fullText).toLocaleString()));
++    // Live full-preview stats: total char count + estimated tokens
++    previewStats.textContent = fullText.length
++      ? `${fullText.length.toLocaleString()} 字 · 约 ${estTok(fullText).toLocaleString()} tokens`
++      : '';
++    for (const { doc, segment, toggle, badge, charCount } of sections) {
+       const changed = !!doc && dirty.has(doc.key);
+       badge.textContent = changed ? S.unsaved : doc ? S.editable : S.readOnly;
+       if (doc && !segments.some((s) => s.sourceKey === doc.key)) badge.textContent += ` · ${S.outsidePrefix}`;
+       badge.classList.toggle('is-dirty', changed);
++      // Per-section live char count
++      const text = doc ? (dirty.get(doc.key) ?? doc.content ?? '') : (segment.text ?? '');
++      charCount.textContent = text.length ? `${text.length.toLocaleString()} 字` : '';
+       // a narrow label column cuts the title, key and badge short; the tooltip carries them whole
+       toggle.title = [...toggle.querySelectorAll('.prefix-flag-title, .prefix-flag-key, .prompt-section-badge')].map((part) => part.textContent).join('\n');
+     }
+@@ -141,9 +171,10 @@ export async function mountPrompts(ctx: FeatureContext): Promise<void> {
+     try {
+       const [data, sources] = await Promise.all([
+         get<{ segments: PrefixSegment[] }>('/api/prompts/prefix', { signal }),
+-        get<{ prompts: PromptDoc[] }>('/api/prompts', { signal }),
++        get<PromptSources>('/api/prompts', { signal }),
+       ]);
+       if (signal.aborted) return false;
++      applicationPolicy(sources.application);
+       const listed = new Set(sources.prompts.map((doc) => doc.key));
+       for (const key of docs.keys()) if (!listed.has(key) && !dirty.has(key)) docs.delete(key);
+       for (const fresh of sources.prompts) {
+@@ -203,6 +234,7 @@ export async function mountPrompts(ctx: FeatureContext): Promise<void> {
+   }
+   if (ctx.capabilities.sessionControl) {
+     const apply = ui.button(S.reloadSession, { size: 'sm', variant: 'primary', onClick: () => { void runSession(apply, false); } });
++    applyButton = apply;
+     apply.title = S.applyHint;
+     actions.append(apply);
+   }
+@@ -345,7 +377,8 @@ export async function mountPrompts(ctx: FeatureContext): Promise<void> {
+   function createSection(segment: PrefixSegment): Section {
+     const doc = segment.sourceKey ? docs.get(segment.sourceKey) : undefined;
+     const info = description(segment, doc);
+-    const collapsed = folds.get(segment.sourceKey ?? segment.title) ?? segment.sourceKey !== 'constitution';
++    // All sections default to EXPANDED; the folds map only preserves explicit user toggles.
++    const collapsed = folds.get(segment.sourceKey ?? segment.title) ?? false;
+     const tone = segment.sourceKey?.startsWith('worlds.') ? 'world' : doc ? 'persona' : 'derived';
+     const label = ui.h('div', `prefix-label tone-${tone}`);
+     label.dataset.source = segment.sourceKey || segment.title;
+@@ -355,7 +388,8 @@ export async function mountPrompts(ctx: FeatureContext): Promise<void> {
+     const key = segment.sourceKey?.startsWith('worlds.') ? segment.sourceKey : segment.title;
+     const meta = ui.h('span', 'prefix-flag-meta');
+     const badge = ui.h('span', 'prompt-section-badge');
+-    meta.append(ui.h('span', 'prefix-flag-key mono', key), badge);
++    const charCount = ui.h('span', 'prefix-flag-charcount');
++    meta.append(ui.h('span', 'prefix-flag-key mono', key), badge, charCount);
+     toggle.append(ui.h('span', 'prefix-flag-title', info.title), meta);
+     const cell = ui.h('div', 'prefix-varcell');
+     const vars = ui.h('div', 'prefix-vars');
+@@ -369,8 +403,28 @@ export async function mountPrompts(ctx: FeatureContext): Promise<void> {
+     const title = ui.h('span', 'prompt-vars-title', S.variablesTitle);
+     title.title = S.variablesTitle;
+     heading.append(title, tools);
+-    const section: Section = { segment, doc, tone, label, toggle, badge, cell, vars, heading, tools, divider, collapsed, updateVariables() {}, fitVariables() {} };
++    const section: Section = { segment, doc, tone, label, toggle, badge, charCount, cell, vars, heading, tools, divider, collapsed, updateVariables() {}, fitVariables() {} };
+     if (!doc) return section;
++    // 1-click "恢复默认" reset button: shown whenever a non-memory doc has a deployment override.
++    let resetBtn: HTMLButtonElement | null = null;
++    if (!doc.key.startsWith('selfMem.')) {
++      resetBtn = ui.button('恢复默认', { size: 'sm', onClick: async () => {
++        try {
++          resetBtn!.disabled = true;
++          await post('/api/prompts/reset', { key: doc.key }, { signal });
++          if (!signal.aborted) await refreshPreview();
++        } catch (error) {
++          if (!signal.aborted) say(String(error), true);
++        } finally {
++          if (!signal.aborted) resetBtn!.disabled = false;
++        }
++      } });
++      resetBtn.classList.add('btn-reset-deployment');
++      resetBtn.title = '移除自定义覆盖，恢复内核、Bot 或 World 默认内容。';
++      resetBtn.hidden = doc.origin !== 'deployment';
++      tools.append(resetBtn);
++      if (doc.origin === 'deployment' && !heading.isConnected) vars.prepend(heading);
++    }
+     const chips = new Map<string, HTMLButtonElement>();
+     const warning = ui.h('div', 'prompt-varwarn');
+     if (doc.vars?.length) {
+@@ -434,6 +488,10 @@ export async function mountPrompts(ctx: FeatureContext): Promise<void> {
+     }
+     vars.append(warning);
+     section.updateVariables = () => {
++      if (resetBtn) {
++        resetBtn.hidden = doc.origin !== 'deployment';
++        if (!resetBtn.hidden && !heading.isConnected) vars.prepend(heading);
++      }
+       const used = new Set(references(editor.text(doc.key)).map((r) => r.name));
+       for (const [name, chip] of chips) chip.classList.toggle('varchip-unused', !used.has(name));
+       const unknown = [...used].filter((name) => doc.vars?.find((v) => v.name === name)?.value === undefined);
+@@ -506,8 +564,9 @@ export async function mountPrompts(ctx: FeatureContext): Promise<void> {
+   }
+   async function refreshVariables(key: string): Promise<void> {
+     try {
+-      const data = await get<{ prompts: PromptDoc[] }>('/api/prompts', { signal });
++      const data = await get<PromptSources>('/api/prompts', { signal });
+       if (signal.aborted) return;
++      applicationPolicy(data.application);
+       const section = sections.find((s) => s.doc?.key === key);
+       const current = data.prompts.find((source) => source.key === key);
+       if (!section || !current) return;
+diff --git a/src/web/client/features/prompts/strings.ts b/src/web/client/features/prompts/strings.ts
+index f5f5368..f122717 100644
+--- a/src/web/client/features/prompts/strings.ts
++++ b/src/web/client/features/prompts/strings.ts
+@@ -26,6 +26,8 @@ const zh = {
+   generatedDesc: "由运行状态生成，作为系统提示词的一部分发送。",
+   prefixStats: (n: number, tok: string) => `${n} 块 · 渲染后约 ${tok} tokens`,
+   pendingApply: "已保存，尚未应用到当前对话。",
++  savedNextTurn: "已保存，下一轮组装时生效。",
++  nextTurnIntro: "全部 System 分段（内核段、人设、自我记忆画布与各 World 环境）均已展开并可直接编辑覆盖；保存后下一轮组装时生效。",
+   applyHint: "保存修改并立即更新 Bot 的系统提示词，保留当前对话内容。",
+   expanded: "已展开",
+   collapsed: "未展开",
+@@ -120,6 +122,8 @@ export const en: typeof zh = {
+   generatedDesc: "Generated from runtime state and included in the system prompt.",
+   prefixStats: (n: number, tok: string) => `${n} blocks · about ${tok} tokens rendered`,
+   pendingApply: "Saved; not yet applied to this conversation.",
++  savedNextTurn: "Saved; takes effect when the next turn is assembled.",
++  nextTurnIntro: "Saved changes take effect when the next turn is assembled. Generated sections are read-only.",
+   applyHint: "Save edits and immediately update the bot’s system prompt, keeping the current conversation.",
+   expanded: "Expanded",
+   collapsed: "Collapsed",
+diff --git a/src/web/client/main.ts b/src/web/client/main.ts
+index ef8227c..88d77cf 100644
+--- a/src/web/client/main.ts
++++ b/src/web/client/main.ts
+@@ -6,7 +6,7 @@ import { withLanguage } from './core/language.ts';
+ import { Lifecycle } from './core/lifecycle.ts';
+ import { Router, type Route } from './core/router.ts';
+ import type { SocketLike } from './core/stream.ts';
+-import { wsUrlOf } from './core/websocket.ts';
++import { browserSocketEnv, openFrameworkSocket, wsUrlOf } from './core/websocket.ts';
+ import { WebUiPageHost, PROVIDER_ROUTE } from './webui-pages/host.ts';
+ import { WebUiPageLoader } from './webui-pages/loader.ts';
+ import { createWebUi } from './ui/index.ts';
+@@ -228,6 +228,12 @@ export function boot(doc: Document = document): { dispose(): void } {
+     ready = true;
+     shell.setCapabilities(capabilities);
+     shell.setPages(host.pages);
++    if (capabilities.debug) {
++      openFrameworkSocket({
++        path: '/ws/status', lifecycle: shellLife, env: browserSocketEnv(window), onError,
++        onFrame: (frame) => { if (frame.t === 'status') shell.setRunStatus(frame.status); },
++      });
++    }
+     apply(router.route);
+   });
+ 
+diff --git a/src/web/client/shell/index.ts b/src/web/client/shell/index.ts
+index 383653a..aaa90a7 100644
+--- a/src/web/client/shell/index.ts
++++ b/src/web/client/shell/index.ts
+@@ -17,6 +17,9 @@ import { S } from './strings.ts';
+ import { prefersStill, steadiest } from '../core/motion.ts';
+ import { inNavOrder, navHidden, NAV_HIDDEN_EVENT } from '../core/world-nav.ts';
+ import { notice } from '../ui/index.ts';
++import { createPersonaSwitch } from '../ui/persona-switch.ts';
++
++const NATIVE_ENGINE_PAGE_ID = 'world:native-engine';
+ 
+ const DEFAULT_BRAND = 'bot';
+ const FRAMEWORK_NAME = 'Cortico';
+@@ -25,6 +28,7 @@ const GROUP_PERSONAS = S.groupPersonas;
+ const GROUP_WORLDS = S.groupWorlds;
+ 
+ 
++
+ export interface ShellDeps {
+   doc: Document;
+   /** UI 原语。DOM 只经它造，外壳不手搓 class。 */
+@@ -58,6 +62,8 @@ export interface WebUiShell {
+    * 这是每秒两次的调用，重排一次 DOM 就是每秒两次重排。
+    */
+   setLamps(lamps: Record<string, WebUiLamp[]>): void;
++  /** 后台推送的运行状态；所有路由共用，不能只相信本地按钮的回包。 */
++  setRunStatus(status: unknown): void;
+   dispose(): void;
+ }
+ 
+@@ -163,6 +169,7 @@ export function createShell(deps: ShellDeps): WebUiShell {
+   foot.append(who, footActions);
+ 
+   let paused = false;
++  let runStatusRevision = 0;
+   let runPending = false;
+   const renderRun = (): void => {
+     const available = capabilities.run === true;
+@@ -177,6 +184,15 @@ export function createShell(deps: ShellDeps): WebUiShell {
+   };
+   renderRun();
+ 
++  const setRunStatus = (status: unknown): void => {
++    if (signal.aborted || !status || typeof status !== 'object') return;
++    const loop = (status as { loop?: { paused?: unknown } }).loop;
++    if (typeof loop?.paused !== 'boolean') return;
++    runStatusRevision++;
++    paused = loop.paused;
++    renderRun();
++  };
++
+   /** 关机请求的锁，等待请求完成后释放。 */
+   let shuttingDown = false;
+   const renderPower = (): void => {
+@@ -250,7 +266,7 @@ export function createShell(deps: ShellDeps): WebUiShell {
+       undefined,
+       { signal },
+     ).then((out) => {
+-      paused = out.paused === true;
++      setRunStatus({ loop: { paused: out.paused === true } });
+       if (out.result) ui.toast(out.result);
+     }).catch((err: unknown) => {
+       if ((err as { name?: string } | null)?.name === 'AbortError') return;
+@@ -265,7 +281,18 @@ export function createShell(deps: ShellDeps): WebUiShell {
+     try { router.navigate(['settings']); } catch (err) { onError(err); }
+   }, { signal });
+ 
+-  el.append(brand, nav, foot);
++  // ── Persona Switcher (rail variant, between brand and nav) ─────────────
++  const personaSwitch = createPersonaSwitch({
++    variant: 'rail',
++    doc,
++    ui,
++    signal,
++    onError,
++  });
++  // Enable once we know world:native-engine is in the manifest
++  personaSwitch.setEnabled((deps.pages ?? []).some(p => p.id === NATIVE_ENGINE_PAGE_ID));
++
++  el.append(brand, personaSwitch.el, nav, foot);
+ 
+   get<{ currentVersion: string; update?: { version: string; url: string } }>('/api/framework/release', { signal })
+     .then((status) => {
+@@ -542,6 +569,7 @@ export function createShell(deps: ShellDeps): WebUiShell {
+    * 外壳没有"整站是否可达"的判据，一个接口的失败也不该被当成那个判据。
+    */
+   void (async () => {
++    const initialRunStatusRevision = runStatusRevision;
+     try {
+       const st = await get<{
+         displayName?: unknown;
+@@ -550,8 +578,7 @@ export function createShell(deps: ShellDeps): WebUiShell {
+       if (signal.aborted) return;
+       const name = st?.displayName;
+       if (typeof name === 'string' && name.trim() !== '') setBrand(name);
+-      paused = st?.loop?.paused === true;
+-      renderRun();
++      if (runStatusRevision === initialRunStatusRevision) setRunStatus(st);
+     } catch { /* 留中性缺省 */ }
+   })();
+ 
+@@ -565,6 +592,7 @@ export function createShell(deps: ShellDeps): WebUiShell {
+       applyRoute();
+     },
+     setBrand,
++    setRunStatus,
+     setCapabilities(next: Record<string, boolean>): void {
+       capabilities = next;
+       renderRun();
+@@ -573,6 +601,7 @@ export function createShell(deps: ShellDeps): WebUiShell {
+     },
+     setPages(next: readonly WebUiPageManifest[]): void {
+       webUiPages = next;
++      personaSwitch.setEnabled(next.some(p => p.id === NATIVE_ENGINE_PAGE_ID));
+       renderNav();
+     },
+     setLamps(next: Record<string, WebUiLamp[]>): void {
+diff --git a/src/web/client/webui-pages/tools/view.ts b/src/web/client/webui-pages/tools/view.ts
+index f05f36e..3cf04d8 100644
+--- a/src/web/client/webui-pages/tools/view.ts
++++ b/src/web/client/webui-pages/tools/view.ts
+@@ -88,8 +88,9 @@ interface CardEntry {
+   haystack: string;
+ }
+ 
+-function toolSchemaCard(ui: WebUi, schema: ToolSchemaDoc): CardEntry {
++function toolSchemaCard(ui: WebUi, schema: ToolSchemaDoc, defaultOpen = false): CardEntry {
+   const card = ui.h('details', 'tool-schema-card');
++  (card as HTMLDetailsElement).open = defaultOpen;
+   const summary = ui.h('summary', 'tool-schema-summary');
+   const rows = schemaParameterRows(schema.parameters);
+   summary.append(
+@@ -165,13 +166,25 @@ export function createToolsView(ui: WebUi): ToolsView {
+     placeholder: S.toolsFilter,
+     onInput: (v) => applyFilter(v),
+   });
+-  bar.append(search);
++  // Expand-all / collapse-all parameter toggle for tool cards
++  const expandAllBtn = ui.button('展开全部参数', { size: 'sm', onClick: () => toggleAllCards(true) });
++  const collapseAllBtn = ui.button('收起全部', { size: 'sm', onClick: () => toggleAllCards(false) });
++  bar.append(search, expandAllBtn, collapseAllBtn);
+   const groups = ui.h('div', 'schema-groups');
+   const noteLine = ui.msgline('');
+   sheet.body.append(bar, noteLine, groups);
+ 
+   /** 分栏与卡片,筛选时按这两张表逐个开关,不重建 DOM;分栏标题旁的数目随筛选变。 */
+   let sections: Array<{ el: HTMLElement; count: HTMLElement; cards: CardEntry[] }> = [];
++  let allCards: CardEntry[] = [];
++  let totalToolCount = 0;
++
++  function toggleAllCards(open: boolean): void {
++    for (const card of allCards) {
++      (card.el as HTMLDetailsElement).open = open;
++    }
++    expandAllBtn.textContent = open ? '展开全部参数' : '展开全部参数';
++  }
+ 
+   function applyFilter(raw: string): void {
+     const q = raw.trim().toLocaleLowerCase();
+@@ -192,10 +205,14 @@ export function createToolsView(ui: WebUi): ToolsView {
+     render(schemas) {
+       while (groups.children.length) groups.children[0].remove();
+       sections = [];
++      allCards = [];
++      totalToolCount = schemas.length;
+       if (!schemas.length) {
+         groups.appendChild(ui.placeholder(S.toolsEmpty));
+         return;
+       }
++      // Default cards open when total tool count ≤ 30 (easy inspection mode).
++      const defaultOpen = totalToolCount <= 30;
+       for (const [name, tools] of groupTools(schemas)) {
+         if (!tools.length) continue;
+         // 分栏标题可点:收起或展开这一栏的全部工具,右侧 + / − 表示当前状态。
+@@ -211,8 +228,11 @@ export function createToolsView(ui: WebUi): ToolsView {
+           head.setAttribute('aria-expanded', String(open));
+           section.classList.toggle('is-collapsed', !open);
+         });
+-        const cards = tools.map((t) => toolSchemaCard(ui, t));
+-        for (const c of cards) list.appendChild(c.el);
++        const cards = tools.map((t) => toolSchemaCard(ui, t, defaultOpen));
++        for (const c of cards) {
++          list.appendChild(c.el);
++          allCards.push(c);
++        }
+         section.append(head, list);
+         groups.appendChild(section);
+         sections.push({ el: section, count, cards });
+diff --git a/src/web/public/styles.css b/src/web/public/styles.css
+index 138f59c..eba854e 100644
+--- a/src/web/public/styles.css
++++ b/src/web/public/styles.css
+@@ -1,4 +1,8 @@
+-@import "tailwindcss";
++@import "tailwindcss" source(none);
++@source "../client";
++@source "../../worlds";
++@source "../../providers";
++@source "../../../bots";
+ @import "../client/features/prompts/prompts.css";
+ @import "../client/features/usage/usage.css";
+ 
+@@ -507,6 +511,54 @@
+   input.field, select.field { background: var(--sheet-2); border: 1px solid var(--line-2); color: var(--ink); border-radius: 8px; padding: 6px 10px; font: var(--text-detail)/1.4 var(--mono); outline: none; }
+   input.field:focus, select.field:focus { border-color: var(--accent); }
+ 
++  /* ── Engineering Workbench grid (data-workbench-mode="full") ───────────── */
++  [data-workbench-mode].wb-grid {
++    display: grid;
++    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
++    gap: 16px;
++    align-items: start;
++  }
++  /* message / status line spans the full grid width */
++  [data-workbench-mode].wb-grid > .msgline { grid-column: 1 / -1; }
++
++  .wb-field-label {
++    font: 600 11px var(--sans); letter-spacing: .06em; color: var(--ink-soft);
++    text-transform: uppercase; margin: 10px 0 4px;
++  }
++  .wb-preset-chips { display: inline-flex; gap: 5px; flex-wrap: wrap; align-items: center; }
++  .wb-chip { border-radius: 20px !important; padding: 3px 10px !important; }
++  .wb-chip-active { background: var(--accent) !important; color: #fff !important; border-color: var(--accent) !important; }
++  .wb-wire-meter { margin: 6px 0; }
++
++  .wb-provider-list[hidden] { display: none; }
++  .wb-provider-chips { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 10px; }
++  .wb-provider-chips .btn { display: inline-flex; align-items: center; gap: 5px; }
++
++  /* ── Prompt page additions ─────────────────────────────────────────────── */
++  .prefix-flag-charcount {
++    flex: 0 0 auto;
++    font: 9px var(--mono);
++    color: var(--ink-dim);
++    white-space: nowrap;
++  }
++  .prompt-preview-bar {
++    display: flex; align-items: center; justify-content: space-between;
++    gap: 8px; margin-bottom: 8px; flex-wrap: wrap;
++  }
++  .prompt-preview-bar .msgline { flex: 1; min-width: 0; }
++  .btn-reset-deployment {
++    color: var(--warn) !important;
++    border-color: color-mix(in srgb, var(--warn) 40%, transparent) !important;
++  }
++  .btn-reset-deployment:hover {
++    background: color-mix(in srgb, var(--warn) 8%, transparent) !important;
++    border-color: var(--warn) !important;
++  }
++
++  /* ── Schema toolbar expand/collapse buttons ────────────────────────────── */
++  .schema-toolbar { align-items: center; }
++  .schema-toolbar .btn { flex: none; }
++
+ 
+   .configrow .ttag { font-size: 10px; line-height: 1.5; color: var(--warn); border: 1px solid var(--line-strong); border-radius: 5px; padding: 0 4px; }
+   .sheet h3 .ttag { margin-left: 8px; font: 400 10px var(--sans); color: var(--ink-dim); border: 1px solid var(--line); border-radius: 5px; padding: 0 4px; }
+@@ -2425,3 +2477,245 @@ input.field:is([list],[data-combo-list])::-webkit-calendar-picker-indicator{disp
+ .extension-lightbox-nav.is-prev{left:24px}
+ .extension-lightbox-nav.is-next{right:24px}
+ @media (prefers-reduced-motion: reduce){.extension-gallery-shot,.extension-gallery-nav,.extension-lightbox-button{transition:none}}
++
++/* ── Persona Switcher ─────────────────────────────────────────────────────── */
++.persona-switch-rail {
++  padding: 10px 12px 8px;
++  border-bottom: 1px solid var(--line);
++}
++.persona-switch-inline {
++  display: inline-flex;
++  align-items: center;
++  flex-shrink: 0;
++}
++.persona-rail-meta {
++  display: flex;
++  align-items: center;
++  gap: 6px;
++  margin-bottom: 6px;
++}
++.persona-meta-label {
++  font-size: 10.5px;
++  letter-spacing: .18em;
++  color: var(--ink-dim);
++  text-transform: uppercase;
++}
++.persona-companion-badge {
++  font: 11px/1 var(--sans);
++  color: var(--ok);
++  background: color-mix(in srgb, var(--ok) 11%, transparent);
++  border: 1px solid color-mix(in srgb, var(--ok) 28%, transparent);
++  border-radius: 20px;
++  padding: 2px 7px;
++}
++.persona-pill-row {
++  display: flex;
++  align-items: center;
++  gap: 6px;
++}
++.persona-pill {
++  display: inline-flex;
++  border: 1px solid var(--line-2);
++  border-radius: 8px;
++  overflow: hidden;
++  background: var(--paper-2);
++  flex-shrink: 0;
++}
++.persona-seg {
++  background: transparent;
++  border: none;
++  padding: 5px 10px;
++  font: 13px/1.3 var(--sans);
++  color: var(--ink-soft);
++  cursor: pointer;
++  transition: background .12s, color .12s;
++  white-space: nowrap;
++}
++.persona-seg:hover { background: var(--sheet-2); color: var(--ink); }
++.persona-seg.active {
++  background: var(--accent);
++  color: #fff;
++  font-weight: 600;
++}
++/* Companion gets a distinctive warm teal so it's unmistakable at a glance */
++.persona-seg.companion.active {
++  background: #1e9070;
++  color: #e8f5ef;
++}
++.persona-rp-badge {
++  font: 11px/1 var(--mono);
++  color: var(--violet);
++  background: color-mix(in srgb, var(--violet) 10%, transparent);
++  border: 1px solid color-mix(in srgb, var(--violet) 28%, transparent);
++  border-radius: 4px;
++  padding: 2px 6px;
++  flex-shrink: 0;
++}
++.persona-gear {
++  background: transparent;
++  border: 1px solid transparent;
++  border-radius: 7px;
++  padding: 4px 7px;
++  font: 14px/1 var(--sans);
++  color: var(--ink-soft);
++  cursor: pointer;
++  transition: background .12s, color .12s, border-color .12s;
++  flex-shrink: 0;
++}
++.persona-gear:hover { background: var(--sheet-2); color: var(--ink); border-color: var(--line-2); }
++
++/* Narrow screens: collapse rail meta, keep only the pill + gear */
++@media (max-width: 720px) {
++  .persona-rail-meta { display: none; }
++}
++
++/* ── Whitelist Popover ─────────────────────────────────────────────────────── */
++.persona-popover {
++  position: fixed;
++  z-index: 200;
++  width: 312px;
++  max-height: calc(100vh - 100px);
++  overflow-y: auto;
++  background: var(--sheet);
++  border: 1px solid var(--line-2);
++  border-radius: 11px 12px 11px 10px;
++  box-shadow: 0 14px 40px -10px var(--shadow-strong);
++  padding: 14px 16px 12px;
++  font-family: var(--sans);
++  animation: persona-pop .13s ease;
++}
++@keyframes persona-pop {
++  from { opacity: 0; transform: translateY(4px); }
++  to   { opacity: 1; transform: none; }
++}
++.persona-pop-title {
++  font: 600 13.5px/1 var(--sans);
++  color: var(--ink);
++  margin-bottom: 4px;
++}
++.persona-pop-sub {
++  font-size: 12px;
++  color: var(--ink-dim);
++  line-height: 1.5;
++  margin-bottom: 10px;
++}
++.persona-pop-slimness {
++  font: 11px/1 var(--mono);
++  color: var(--ink-soft);
++  background: var(--sheet-2);
++  border: 1px solid var(--line);
++  border-radius: 7px;
++  padding: 5px 9px;
++  margin-bottom: 10px;
++}
++.persona-pop-slimness:empty { display: none; }
++.persona-pop-checks {
++  display: flex;
++  flex-direction: column;
++  gap: 1px;
++  margin-bottom: 11px;
++}
++.persona-pop-check-row {
++  display: flex;
++  align-items: flex-start;
++  gap: 8px;
++  padding: 5px 4px;
++  cursor: pointer;
++  border-radius: 6px;
++  transition: background .1s;
++}
++.persona-pop-check-row:hover { background: var(--hover); }
++.persona-pop-check-row input[type="checkbox"] { margin-top: 2px; flex: none; }
++.persona-pop-check-text {
++  display: flex;
++  flex-direction: column;
++  gap: 2px;
++}
++.persona-pop-check-label { font: 13px/1 var(--sans); color: var(--ink); }
++.persona-pop-check-sub   { font: 11px/1.4 var(--sans); color: var(--ink-dim); }
++.persona-pop-section-label {
++  font-size: 10.5px;
++  letter-spacing: .14em;
++  color: var(--ink-dim);
++  text-transform: uppercase;
++  margin-bottom: 7px;
++}
++.persona-pop-worlds {
++  display: flex;
++  gap: 5px;
++  flex-wrap: wrap;
++  margin-bottom: 12px;
++  min-height: 20px;
++}
++.persona-world-chip {
++  font: 12px/1 var(--sans);
++  color: var(--ink-soft);
++  background: var(--sheet-2);
++  border: 1px solid var(--line);
++  border-radius: 20px;
++  padding: 4px 11px;
++  cursor: pointer;
++  transition: border-color .12s, color .12s, background .12s;
++}
++.persona-world-chip:hover { border-color: var(--accent-2); color: var(--ink); }
++.persona-world-chip.active {
++  background: color-mix(in srgb, var(--ok) 11%, transparent);
++  border-color: var(--ok);
++  color: var(--ok);
++}
++.persona-pop-empty { font: 12px var(--sans); color: var(--ink-dim); }
++.persona-pop-footer {
++  display: flex;
++  align-items: center;
++  justify-content: space-between;
++  gap: 8px;
++  padding-top: 10px;
++  border-top: 1px solid var(--line);
++}
++.persona-pop-rp-btn { flex-shrink: 0; }
++.persona-pop-workbench-link {
++  font: 12px var(--sans);
++  color: var(--accent);
++  text-decoration: none;
++  flex-shrink: 0;
++}
++.persona-pop-workbench-link:hover { text-decoration: underline; }
++
++/* ── Companion Whitelist sub-panel (Engineering Workbench) ─────────────────── */
++.wb-companion-whitelist {
++  margin-top: 14px;
++  padding-top: 12px;
++  border-top: 1px solid var(--line);
++}
++.wb-companion-whitelist > label.check {
++  margin-right: 16px;
++  margin-bottom: 6px;
++}
++.wb-companion-whitelist-label {
++  font: 600 12.5px/1 var(--sans);
++  color: var(--ink-soft);
++  margin-bottom: 10px;
++  letter-spacing: .02em;
++}
++.wb-companion-worlds {
++  display: flex;
++  gap: 5px;
++  flex-wrap: wrap;
++  margin-top: 6px;
++}
++.wb-companion-world-chip {
++  font: 12px/1 var(--sans);
++  color: var(--ink-soft);
++  background: var(--sheet-2);
++  border: 1px solid var(--line);
++  border-radius: 20px;
++  padding: 4px 11px;
++  cursor: pointer;
++  transition: border-color .12s, color .12s, background .12s;
++}
++.wb-companion-world-chip:hover { border-color: var(--accent-2); color: var(--ink); }
++.wb-companion-world-chip.active {
++  background: color-mix(in srgb, var(--ok) 11%, transparent);
++  border-color: var(--ok);
++  color: var(--ok);
++}
+diff --git a/src/web/server.ts b/src/web/server.ts
+index e934010..0b5548e 100644
+--- a/src/web/server.ts
++++ b/src/web/server.ts
+@@ -78,6 +78,8 @@ export interface WebAppDebugDeps {
+   onRunlog(cb: (entry: LogRecord) => void): void;
+   /** 主循环的 RunPhase 变化;缺席时状态帧里的 loop.phase 只随其他帧更新。 */
+   onRunPhase?(cb: (phase: RunPhase) => void): void;
++  /** Mechanical delivery state changed, independently of session appends. */
++  onStatusChange?(cb: () => void): void | (() => void);
+   /** 当前 run id;/api/log 缺省读它的 log.jsonl */
+   runId?(): string;
+   /** 主循环当前工具表schema(run()前为空数组) */
+@@ -538,10 +540,12 @@ export interface PrefixSegmentView {
+ }
+ 
+ export interface WebAppPromptDeps {
++  /** Saved templates either require an explicit reload or join the next real turn. */
++  application?: 'manual' | 'next-turn';
+   /** 标题与说明按 `language`;key、内容与 revision 不随语言变。 */
+   list(language: Language): PromptDocument[] | Promise<PromptDocument[]>;
+   /** 回执按 `language`。`baseRevision` 过期时抛 `PromptRevisionConflict`,WebUI 据此回 409。 */
+-  write(key: string, content: string, baseRevision: string | undefined, language: Language): string;
++  write(key: string, content: string, baseRevision: string | undefined, language: Language): string | Promise<string>;
+   /** 删除部署覆盖，回落到 bot 包覆盖或 World 默认。 */
+   reset?(key: string, language: Language): string;
+   /**
+@@ -1023,8 +1027,11 @@ export class WebApp {
+   private wss: WebSocketServer | null = null;
+   /** /ws/debug 已连接客户端(广播目标) */
+   private readonly debugClients = new Set<WebSocket>();
++  /** 全局外壳只订阅状态，不接收会话、工具结果或事件正文。 */
++  private readonly statusClients = new Set<WebSocket>();
+   /** /ws/sessions 已连接客户端(session统计广播;chat页轻量订阅用) */
+   private readonly sessionClients = new Set<WebSocket>();
++  private stopStatusObserver?: () => void;
+ 
+   constructor(deps: WebAppDeps) {
+     this.deps = deps;
+@@ -1060,7 +1067,10 @@ export class WebApp {
+       dbg.onEvent((envelope) => this.debugBroadcast({ t: 'event', envelope }));
+       dbg.onRunlog((entry) => this.debugBroadcast({ t: 'runlog', entry }));
+       // 工具每次开始与结束都会变,单独成帧:status 帧要估算 token、扫描投递积压,不随它重算。
+-      dbg.onRunPhase?.((phase) => this.debugBroadcast({ t: 'phase', phase }));
++      dbg.onRunPhase?.((phase) => {
++        this.debugBroadcast({ t: 'phase', phase });
++        if (phase.state === 'idle') this.debugBroadcast({ t: 'status', status: this.safeStatus() });
++      });
+     }
+     // session统计变化→全量列表推送(列表小,每次LLM调用一帧,频率低)。
+     // 同帧也走debug通道(chat调试台已连/ws/debug,免开第二条连接)。
+@@ -1363,7 +1373,15 @@ export class WebApp {
+     }
+   }
+ 
+-  private debugBroadcast(payload: unknown): void {
++  private debugBroadcast(payload: { t: string; [key: string]: unknown }): void {
++    if (payload.t === 'status') {
++      const raw = JSON.stringify(payload);
++      for (const ws of [...this.statusClients]) {
++        if (ws.readyState === 1) {
++          try { ws.send(raw); } catch { this.statusClients.delete(ws); }
++        } else if (ws.readyState > 1) this.statusClients.delete(ws);
++      }
++    }
+     if (this.debugClients.size === 0) return;
+     const raw = JSON.stringify(payload);
+     for (const ws of [...this.debugClients]) {
+@@ -1375,6 +1393,16 @@ export class WebApp {
+     }
+   }
+ 
++  private handleStatusConnection(ws: WebSocket): void {
++    this.statusClients.add(ws);
++    ws.on('close', () => this.statusClients.delete(ws));
++    ws.on('error', () => {
++      this.statusClients.delete(ws);
++      try { ws.terminate(); } catch { /* ignore */ }
++    });
++    ws.send(JSON.stringify({ t: 'status', status: this.safeStatus() }));
++  }
++
+   /** /ws/debug 新连接:发hello全量快照,之后实时帧由构造时注册的监听器广播 */
+   private handleDebugConnection(ws: WebSocket, language: Language): void {
+     const dbg = this.deps.debug;
+@@ -1417,9 +1445,9 @@ export class WebApp {
+         try {
+           pathname = new URL(req.url ?? '', 'http://localhost').pathname;
+         } catch { /* 保持空串 */ }
+-        // 框架自己的两条固定路径 + 通用 WebUI 页流式通道(路径带 page/panel 两段)
++        // 框架固定路径 + 通用 WebUI 页流式通道(路径带 page/panel 两段)
+         const stream = parseStreamPath(pathname);
+-        const framework = pathname === '/ws/debug' || pathname === '/ws/sessions';
++        const framework = pathname === '/ws/debug' || pathname === '/ws/sessions' || pathname === '/ws/status';
+         if (!framework && !stream) {
+           socket.destroy();
+           return;
+@@ -1454,6 +1482,10 @@ export class WebApp {
+             this.handleDebugConnection(ws, language);
+             return;
+           }
++          if (pathname === '/ws/status') {
++            this.handleStatusConnection(ws);
++            return;
++          }
+           this.handleSessionsConnection(ws, language);
+         });
+       });
+@@ -1510,6 +1542,8 @@ export class WebApp {
+ 
+     this.server = server;
+     this.wss = wss;
++    const stopStatus = this.deps.debug?.onStatusChange?.(() => this.debugBroadcast({ t: 'status', status: this.safeStatus() }));
++    if (stopStatus) this.stopStatusObserver = stopStatus;
+     const actual = (server.address() as AddressInfo).port;
+     this.deps.log.info(`web面板已启动 http://${this.listenHost}:${actual}/`);
+     if (!LOOPBACK_HOSTS.has(this.listenHost) && this.listenHost !== '::1' && !this.auth.enabled) {
+@@ -1525,6 +1559,8 @@ export class WebApp {
+   }
+ 
+   async stop(): Promise<void> {
++    this.stopStatusObserver?.();
++    this.stopStatusObserver = undefined;
+     const wss = this.wss;
+     const server = this.server;
+     this.wss = null;
+@@ -1536,6 +1572,7 @@ export class WebApp {
+       await new Promise<void>((res) => wss.close(() => res()));
+     }
+     this.debugClients.clear();
++    this.statusClients.clear();
+     this.sessionClients.clear();
+     if (server) {
+       await new Promise<void>((res) => {
+@@ -2172,7 +2209,7 @@ export class WebApp {
+     app.get('/api/prompts', wrap(async (req, res) => {
+       const src = this.deps.prompts;
+       if (!src) { res.status(503).json({ error: serverText(this.languageOf(req)).promptsUnavailable }); return; }
+-      res.json({ prompts: await src.list(this.languageOf(req)) });
++      res.json({ prompts: await src.list(this.languageOf(req)), application: src.application ?? 'manual' });
+     }));
+ 
+     /** 整条前缀的分段视图。现拼,不依赖活 session(见 WebAppPromptDeps.prefix)。 */
+@@ -2182,7 +2219,7 @@ export class WebApp {
+       res.json({ segments: await src.prefix() });
+     }));
+ 
+-    app.post('/api/prompts', express.json({ limit: '2mb' }), (req: Request, res: Response) => {
++    app.post('/api/prompts', express.json({ limit: '2mb' }), wrap(async (req: Request, res: Response) => {
+       const src = this.deps.prompts;
+       if (!src) { res.status(503).json({ error: serverText(this.languageOf(req)).promptsUnavailable }); return; }
+       const body = (req.body ?? {}) as Record<string, unknown>;
+@@ -2194,7 +2231,7 @@ export class WebApp {
+         return;
+       }
+       try {
+-        const result = src.write(
++        const result = await src.write(
+           key,
+           body.content,
+           typeof body.baseRevision === 'string' ? body.baseRevision : undefined,
+@@ -2209,22 +2246,22 @@ export class WebApp {
+           ...(conflict ? { conflict: true } : {}),
+         });
+       }
+-    });
++    }));
+ 
+-    app.post('/api/prompts/reset', express.json(), (req: Request, res: Response) => {
++    app.post('/api/prompts/reset', express.json(), wrap(async (req: Request, res: Response) => {
+       const src = this.deps.prompts;
+       if (!src?.reset) { res.status(503).json({ error: serverText(this.languageOf(req)).promptsUnavailable }); return; }
+       const body = (req.body ?? {}) as Record<string, unknown>;
+       const key = typeof body.key === 'string' ? body.key.trim() : '';
+       if (!key) { res.status(400).json({ error: serverText(this.languageOf(req)).missingField('key') }); return; }
+       try {
+-        const result = src.reset(key, this.languageOf(req));
++        const result = await src.reset(key, this.languageOf(req));
+         this.deps.log.warn('固定提示词部署覆盖已移除', { key });
+         res.json({ ok: true, result });
+       } catch (err) {
+         res.status(400).json({ error: this.errorText(err, req) });
+       }
+-    });
++    }));
+ 
+     app.get('/api/tool-schemas', wrap((req, res) => {
+       const src = this.deps.toolSchemas;
+diff --git a/src/world.ts b/src/world.ts
+index 8fc2e67..77857f6 100644
+--- a/src/world.ts
++++ b/src/world.ts
+@@ -413,6 +413,35 @@ export class WorldAssembly {
+     }
+   }
+ 
++  /** An execution host released this exact instance; deployment intent is unchanged. */
++  detached(instance: World, { retainInstance = false }: { retainInstance?: boolean } = {}): void {
++    const slot = this.slots.find((entry) => entry.instance === instance);
++    if (!slot) return;
++    const index = this.mounted.indexOf(instance);
++    if (index >= 0) this.mounted.splice(index, 1);
++    slot.mounted = false;
++    delete slot.failure;
++    this.host?.lifecycle?.({ kind: 'unmounted', id: slot.id, label: slot.label });
++    if (slot.definition && !retainInstance) {
++      try { slot.instance = slot.definition.create(this.context(slot.definition)); }
++      catch (error) {
++        const reason = error instanceof Error ? error.message : String(error);
++        this.slots.splice(this.slots.indexOf(slot), 1);
++        this.missing.push({ id: slot.id, label: slot.label, declared: slot.declared,
++          reason: (language) => text(language).constructFailed(reason) });
++      }
++    }
++  }
++
++  /** Restore the same instance after its runtime owner restarted it. */
++  restored(instance: World): void {
++    const slot = this.slots.find((entry) => entry.instance === instance);
++    if (!slot) return;
++    slot.mounted = true;
++    delete slot.failure;
++    this.host?.lifecycle?.({ kind: 'restarted', id: slot.id, label: slot.label });
++  }
++
+   /** 按 worlds.<id>.enabled 同步状态，供 WorldContext.restart 调用。 */
+   sync(id: string): Promise<void> {
+     return this.queued(id, () => this.syncNow(id));
+diff --git a/tests/core/usage-log.test.ts b/tests/core/usage-log.test.ts
+index 80b62a2..a1e32b4 100644
+--- a/tests/core/usage-log.test.ts
++++ b/tests/core/usage-log.test.ts
+@@ -1,6 +1,6 @@
+ /** UsageLog:追加/读取/清空,坏行跳过。 */
+ import { describe, expect, it, beforeEach, afterEach } from 'vitest';
+-import { mkdtempSync, rmSync, appendFileSync, writeFileSync, readFileSync } from 'node:fs';
++import { mkdtempSync, mkdirSync, rmSync, appendFileSync, writeFileSync, readFileSync } from 'node:fs';
+ import { tmpdir } from 'node:os';
+ import { join } from 'node:path';
+ import { UsageLog } from '../../src/core/usage-log.ts';
+@@ -31,6 +31,21 @@ describe('UsageLog', () => {
+     expect(new UsageLog(join(dir, 'nope.jsonl')).readAll()).toEqual([]);
+   });
+ 
++  it('durable attempt replay is idempotent across log instances while changed meters conflict', () => {
++    const first = { ...rec(1), recordId: 'native-terminal-7', run: 'old-run', round: 1 };
++    new UsageLog(file).append(first);
++    const bytes = readFileSync(file, 'utf8');
++    const restored = new UsageLog(file);
++    restored.append({ ...first, run: 'new-run', round: 9, label: 'renamed display' });
++    expect(restored.count()).toBe(1);
++    expect(readFileSync(file, 'utf8')).toBe(bytes);
++    expect(() => restored.append({ ...first, promptTokens: 101 })).toThrow(/conflicts/);
++    expect(readFileSync(file, 'utf8')).toBe(bytes);
++    restored.clear();
++    restored.append({ ...first, promptTokens: 101 });
++    expect(restored.readAll()[0].promptTokens).toBe(101);
++  });
++
+   it('reads current records across restart and excludes old rows without rewriting the ledger', () => {
+     writeFileSync(file, JSON.stringify(rec(1)) + '\n');
+     const log = new UsageLog(file);
+@@ -71,6 +86,41 @@ describe('UsageLog', () => {
+     expect(log.readAll()).toEqual([]);
+   });
+ 
++  it('persists one source watermark, suppresses old replay and admits new records without old identity tombstones', () => {
++    const hooks = { cursor: () => 200, sequenceOf: (row: UsageRecord) => row.promptTokens };
++    let log = new UsageLog(file);
++    const dispose = log.registerReplaySource('fixture-source', hooks);
++    log.append(rec(1));
++    expect(log.clear()).toBe(1);
++    expect(JSON.parse(readFileSync(file + '.replay-clear.json', 'utf8'))).toEqual({ version: 1, sources: [['fixture-source', 200]] });
++    log.append(rec(1)); log.append(rec(3));
++    expect(log.readAll().map(row => row.promptTokens)).toEqual([300]);
++    dispose();
++    log = new UsageLog(file);
++    log.registerReplaySource('fixture-source', hooks);
++    log.append(rec(1));
++    expect(log.readAll().map(row => row.promptTokens)).toEqual([300]);
++  });
++
++  it('a failed watermark write leaves ledger bytes intact and reports clear failure until a successful retry', () => {
++    const errors: string[] = [];
++    const log = new UsageLog(file, error => errors.push(error));
++    log.registerReplaySource('fixture-source', { cursor: () => 200, sequenceOf: row => row.promptTokens });
++    log.append(rec(1));
++    const bytes = readFileSync(file, 'utf8');
++    mkdirSync(file + '.replay-clear.json');
++    expect(() => log.clear()).toThrow();
++    expect(readFileSync(file, 'utf8')).toBe(bytes);
++    expect(log.status().error).not.toBeNull();
++    log.append(rec(3));
++    expect(log.status().error).not.toBeNull();
++    expect(errors.length).toBeGreaterThan(0);
++    rmSync(file + '.replay-clear.json', { recursive: true });
++    expect(log.clear()).toBe(2);
++    expect(log.status()).toEqual({ pending: 0, error: null });
++    expect(log.count()).toBe(0);
++  });
++
+   it('retains failed appends and flushes them once the directory becomes writable', () => {
+     const blocked = join(dir,'blocked');
+     writeFileSync(blocked,'file occupying directory');
+diff --git a/tests/providers/hub.test.ts b/tests/providers/hub.test.ts
+index 6c14438..67abc40 100644
+--- a/tests/providers/hub.test.ts
++++ b/tests/providers/hub.test.ts
+@@ -28,6 +28,53 @@ function fixture() {
+ }
+ const entry = { kind: 'openai-responses-compat', baseUrl: 'https://model.test', spec: { model: 'test-model', thinking: false } };
+ 
++it('notifies committed changes after releasing the write lock and isolates observer failures', () => {
++  const { hub, cfg, root } = fixture();
++  const diagnostic = vi.spyOn(console, 'error').mockImplementation(() => {});
++  const changes: Array<{ type: string; name?: string }> = [];
++  const offFailure = hub.onChange(() => { throw new Error('observer failure'); });
++  const off = hub.onChange(change => {
++    expect(existsSync(join(root, '.write-lock'))).toBe(false);
++    if (change.type === 'save') {
++      expect(existsSync(join(root, change.name, 'config.json'))).toBe(true);
++      expect(cfg.providers[change.name].spec?.model).toBe(entry.spec.model);
++    } else if (change.type === 'activate') expect(cfg.activeProvider).toBe(change.name);
++    else if (change.type === 'delete') expect(cfg.providers[change.name]).toBeUndefined();
++    changes.push(change);
++  });
++  try {
++    const first = hub.save(null, { name: 'First', entry }, 'en');
++    hub.save(null, { name: 'Second', entry }, 'en');
++    hub.activate('First', 'en');
++    hub.activate('Second', 'en');
++    hub.delete('First', first.revision);
++    expect(changes.map(change => change.type)).toEqual(['save', 'save', 'activate', 'activate', 'delete']);
++    expect(diagnostic).toHaveBeenCalledTimes(changes.length);
++    off();
++    hub.save(null, { name: 'Third', entry }, 'en');
++    expect(changes).toHaveLength(5);
++  } finally { off(); offFailure(); diagnostic.mockRestore(); }
++});
++
++it('notifies module removal only after successful completion and omits failed transactions', async () => {
++  const module = { ...providerModule(entry.kind), id: 'fixture-change-notification', title: 'Fixture' };
++  registerProviderModules([module]);
++  const { hub } = fixture();
++  const changes: string[] = [];
++  const off = hub.onChange(change => { changes.push(change.type); });
++  try {
++    expect(() => hub.save(null, { name: 'Invalid', entry: { ...entry, spec: undefined } }, 'en')).toThrow();
++    expect(() => hub.activate('Missing', 'en')).toThrow();
++    await expect(hub.removeModule(module.id, async () => { throw new Error('remove failed'); })).rejects.toThrow('remove failed');
++    expect(changes).toEqual([]);
++    await hub.removeModule(module.id, async () => 'removed');
++    expect(changes).toEqual(['module-remove']);
++  } finally {
++    off();
++    if (providerModules.includes(module)) await removeProviderModule(module.id, async () => 'cleanup');
++  }
++});
++
+ it('withdraws a provider before package removal, rejects stale editors, and restores registration on failure', async () => {
+   const module = { ...providerModule(entry.kind), id: 'fixture-removable', title: 'Fixture' };
+   registerProviderModules([module]);
+diff --git a/tests/web/api.test.ts b/tests/web/api.test.ts
+index 3ac3be7..e31c557 100644
+--- a/tests/web/api.test.ts
++++ b/tests/web/api.test.ts
+@@ -112,7 +112,7 @@ beforeAll(async () => {
+     ],
+     prompts: {
+       list: () => [...promptDocs.values()],
+-      write: (key, content) => {
++      write: async (key, content) => {
+         const doc = promptDocs.get(key);
+         if (!doc) throw new Error('未知固定提示词');
+         doc.content = content;
+@@ -331,6 +331,7 @@ describe('/api/capabilities', () => {
+ describe('/api/prompts 与 session 前缀重载', () => {
+   it('读取并保存固定提示词，拒绝未知 key', async () => {
+     const before = await getJson(base() + '/api/prompts');
++    expect(before.application).toBe('manual');
+     expect(before.prompts.map((p: { key: string }) => p.key)).toContain('orientation');
+ 
+     const saved = await fetch(base() + '/api/prompts', {
+@@ -339,6 +340,7 @@ describe('/api/prompts 与 session 前缀重载', () => {
+       body: JSON.stringify({ key: 'orientation', content: '新定向' }),
+     });
+     expect(saved.status).toBe(200);
++    expect((await saved.json() as { result: string }).result).toBe('已保存');
+     expect(promptDocs.get('orientation')?.content).toBe('新定向');
+ 
+     const bad = await fetch(base() + '/api/prompts', {
+@@ -355,6 +357,20 @@ describe('/api/prompts 与 session 前缀重载', () => {
+     expect(prefixReloads).toBe(1);
+   });
+ 
++  it('reports automatic next-turn application when the prompt owner declares it', async () => {
++    const app2 = new WebApp({
++      store, memoryDir, dataDir, getStatus: () => ({}), log: nullLogger(),
++      prompts: { application: 'next-turn', list: () => [], write: async () => 'Saved' },
++    });
++    const port2 = await app2.start(0);
++    try {
++      const response = await fetch('http://127.0.0.1:' + port2 + '/api/prompts');
++      expect(await response.json()).toEqual({ prompts: [], application: 'next-turn' });
++    } finally {
++      await app2.stop();
++    }
++  });
++
+   it('async 路由的拒绝回 500 并带上错误', async () => {
+     const app2 = new WebApp({
+       store, memoryDir, dataDir,
+diff --git a/tests/web/auth.test.ts b/tests/web/auth.test.ts
+index 8ee7189..e0dc5a6 100644
+--- a/tests/web/auth.test.ts
++++ b/tests/web/auth.test.ts
+@@ -132,6 +132,7 @@ describe('WebApp 访问密码', () => {
+     expect((await call(port, { path: '/' })).body).not.toContain('id="login"');
+     expect(JSON.parse((await call(port, { path: '/api/auth/status' })).body)).toEqual({ required: false, authenticated: true });
+     expect(await socketOpens(`ws://127.0.0.1:${port}/ws/sessions`)).toBe(true);
++    expect(await socketOpens(`ws://127.0.0.1:${port}/ws/status`)).toBe(true);
+   });
+ 
+   it('设了密码而未登录:入口给登录页,接口回 401 并带标记头,WebSocket 连不上', async () => {
+@@ -145,6 +146,7 @@ describe('WebApp 访问密码', () => {
+     expect((await call(port, { path: '/login.html' })).status).toBe(401);
+     expect(JSON.parse((await call(port, { path: '/api/auth/status' })).body)).toEqual({ required: true, authenticated: false });
+     expect(await socketOpens(`ws://127.0.0.1:${port}/ws/sessions`)).toBe(false);
++    expect(await socketOpens(`ws://127.0.0.1:${port}/ws/status`)).toBe(false);
+   });
+ 
+   it('未登录的大请求体在解析之前就被 401 挡下', async () => {
+@@ -171,6 +173,7 @@ describe('WebApp 访问密码', () => {
+     expect((await call(port, { path: '/api/status', cookie })).status).toBe(200);
+     expect((await call(port, { path: '/', cookie })).body).not.toContain('id="login"');
+     expect(await socketOpens(`ws://127.0.0.1:${port}/ws/sessions`, cookie)).toBe(true);
++    expect(await socketOpens(`ws://127.0.0.1:${port}/ws/status`, cookie)).toBe(true);
+   });
+ 
+   it('反向代理报告 HTTPS 时 Cookie 带 Secure', async () => {
+diff --git a/tests/web/client-main.test.ts b/tests/web/client-main.test.ts
+index 4bf8e19..dadfd8a 100644
+--- a/tests/web/client-main.test.ts
++++ b/tests/web/client-main.test.ts
+@@ -46,6 +46,40 @@ describe('createMemo', () => {
+ });
+ 
+ describe('boot', () => {
++  it('全局状态通道在非 Live 路由仍更新外壳，dispose 关闭连接并摘除监听', async () => {
++    window.location.hash = '#/unclaimed';
++    const sockets: Any[] = [];
++    class StatusSocket {
++      readyState = 1;
++      onopen: Any = null; onclose: Any = null; onerror: Any = null; onmessage: Any = null;
++      closed = false;
++      constructor(readonly url: string) { sockets.push(this); }
++      send(): void {}
++      close(): void { this.closed = true; }
++    }
++    vi.stubGlobal('WebSocket', StatusSocket);
++    vi.stubGlobal('fetch', (url: unknown) => {
++      const path = String(url);
++      if (path.includes('/api/capabilities')) return Promise.resolve(json({ capabilities: { debug: true, run: true } }));
++      if (path.includes('/api/webui/manifest')) return Promise.resolve(json({ protocolVersion: 1, pages: [], framework: { capabilities: {} } }));
++      if (path.includes('/api/status')) return Promise.resolve(json({ loop: { paused: true } }));
++      return Promise.resolve(json({}));
++    });
++    const { boot } = (await import(MAIN)) as Any;
++    const app = boot(document);
++    await flush();
++    expect(sockets).toHaveLength(1);
++    const socket = sockets[0];
++    expect(socket.url).toContain('/ws/status');
++    expect(document.querySelector('.rail-runstate')!.textContent).toBe('已暂停');
++    socket.onmessage({ data: JSON.stringify({ t: 'status', status: { loop: { paused: false } } }) });
++    expect(document.querySelector('.rail-runstate')!.textContent).toBe('运行中');
++    expect(document.querySelector('.rail-run')!.getAttribute('aria-label')).toBe('暂停运行');
++    app.dispose();
++    expect(socket.closed).toBe(true);
++    expect(socket.onmessage).toBe(null);
++  });
++
+   it('能力清单到达前 dispose:到达后不再导航,不再渲染', async () => {
+     let release: () => void = () => {};
+     const gate = new Promise<void>((resolve) => { release = resolve; });
+diff --git a/tests/web/debug.test.ts b/tests/web/debug.test.ts
+index 7153153..c900c2e 100644
+--- a/tests/web/debug.test.ts
++++ b/tests/web/debug.test.ts
+@@ -66,6 +66,7 @@ let session: SessionLog;
+ let store: JsonlEventStore;
+ let runlog: Runlog;
+ let paused = false;
++let statusObserver: (() => void) | undefined;
+ 
+ const sysMsg: ChatMessage = { role: 'system', content: '测试用系统前缀。' };
+ const asstMsg: ChatMessage = {
+@@ -96,6 +97,7 @@ beforeAll(async () => {
+     onRunlog: (cb) => runlog.onWrite(cb),
+     runId: () => 'r-20260101-000000-0001',
+     toolSchemas: () => schemas,
++    onStatusChange: (cb) => { statusObserver = cb; return () => { statusObserver = undefined; }; },
+   };
+   app = new WebApp({
+     store,
+@@ -184,6 +186,24 @@ describe('/ws/debug 实时推送', () => {
+     expect(((await q.nextOfType('status')).status as { loop: { paused: boolean } }).loop.paused).toBe(false);
+     ws.close();
+   });
++
++  it('同一 WebApp 停止后重开会重订阅状态，轻量通道只接收状态帧', async () => {
++    expect(typeof statusObserver).toBe('function');
++    await app.stop();
++    expect(statusObserver).toBeUndefined();
++    port = await app.start(0);
++    expect(typeof statusObserver).toBe('function');
++    const ws = new WebSocket(`ws://127.0.0.1:${port}/ws/status`);
++    const q = new WSQueue(ws);
++    await new Promise<void>((resolve, reject) => { ws.once('open', resolve); ws.once('error', reject); });
++    expect(Object.keys(await q.next()).sort()).toEqual(['status', 't']);
++    paused = true;
++    statusObserver!();
++    const frame = await q.next();
++    expect(frame.t).toBe('status');
++    expect((frame.status as { loop: { paused: boolean } }).loop.paused).toBe(true);
++    ws.close();
++  });
+ });
+ 
+ describe('无debug deps时的拒绝路径', () => {
+diff --git a/tests/web/feature-live.test.ts b/tests/web/feature-live.test.ts
+index 41611cc..ea0d75a 100644
+--- a/tests/web/feature-live.test.ts
++++ b/tests/web/feature-live.test.ts
+@@ -551,6 +551,19 @@ describe('live feature 声明', () => {
+ // ===========================================================================
+ 
+ describe('live feature 挂载', () => {
++  it('today cost is unknown for unquoted calls and keeps a priced lower bound for mixed calls', async () => {
++    for (const [pricedCalls, expected] of [[0, '未知'], [1, '$0.00+']] as const) {
++      const { env } = fakeEnv();
++      const { ctx, root } = mkCtx({ debug: true, sessions: true, usage: true });
++      stubFetch(url => url.startsWith('/api/usage') ? { currency: 'USD', totals: { calls: 4, cost: 0, unpricedCalls: 3, pricedCalls } } : {});
++      live.createLiveFeature({ env }).mount(ctx);
++      await flush();
++      expect(root.find('live-cost')!.textContent).toBe('今日 ' + expected);
++      expect(root.find('live-cost')!.title).toContain('4');
++      ctx.lifecycle.dispose();
++    }
++  });
++
+   it('画出两层顶栏、时间线与带分类圆环的输入器', () => {
+     const { env, sockets } = fakeEnv();
+     const { ctx, root } = mkCtx({ debug: true, sessions: true });
+diff --git a/tests/web/feature-prompts.test.ts b/tests/web/feature-prompts.test.ts
+index fd71abb..673aa13 100644
+--- a/tests/web/feature-prompts.test.ts
++++ b/tests/web/feature-prompts.test.ts
+@@ -9,6 +9,7 @@ const UI = '../../src/web/client/ui/index.ts';
+ const LIFECYCLE = '../../src/web/client/core/lifecycle.ts';
+ const ROUTER = '../../src/web/client/core/router.ts';
+ const PROMPTS = '../../src/web/client/features/prompts/index.ts';
++const PROMPT_STRINGS = '../../src/web/client/features/prompts/strings.ts';
+ import { WEBUI_PROTOCOL_VERSION } from '../../src/web/shared/webui-protocol.ts';
+ 
+ const EDITOR = '../../src/web/client/features/prompts/editor.ts';
+@@ -19,6 +20,7 @@ const { createWebUi } = (await import(UI)) as Any;
+ const { Lifecycle } = (await import(LIFECYCLE)) as Any;
+ const { Router } = (await import(ROUTER)) as Any;
+ const prompts = (await import(PROMPTS)) as Any;
++const { S } = (await import(PROMPT_STRINGS)) as Any;
+ const { createPrefixEditor } = (await import(EDITOR)) as Any;
+ const { EditorView } = (await import('@codemirror/view')) as Any;
+ 
+@@ -298,6 +300,7 @@ describe('continuous prompt document', () => {
+ describe('prompt persistence and reload', () => {
+ const worldKey = 'worlds.fixture.envPrompt';
+ let sources: Any[], generated: string, writes: Any[], sessionWrites: string[], saveGate: Any, sessionGate: Any, configAvailable: boolean, failures: Set<string>;
++let application: 'manual' | 'next-turn' | undefined;
+ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
+ function prefix() {
+   return [
+@@ -311,6 +314,7 @@ beforeEach(() => {
+     { key: worldKey, title: 'World template', role: 'envPrompt', content: 'Environment', revision: '1', origin: 'module' },
+   ];
+   generated = 'files.md'; writes = []; sessionWrites = [];
++  application = undefined;
+   saveGate = sessionGate = null; configAvailable = true; failures = new Set();
+   history.replaceState(null, '', '/#/prompts');
+   vi.stubGlobal('fetch', async (path: string, options: Any) => {
+@@ -318,7 +322,7 @@ beforeEach(() => {
+       { id: 'world:fixture', kind: 'world', label: 'Fixture World', availability: 'active', configGroups: ['worlds.fixture'], prompts: [{ key: worldKey }] },
+     ] });
+     if (path === '/api/prompts/prefix') return json({ segments: prefix() });
+-    if (path === '/api/prompts' && options.method === 'GET') return json({ prompts: sources });
++    if (path === '/api/prompts' && options.method === 'GET') return json({ prompts: sources, application });
+     if (path === '/api/prompts') {
+       const body = JSON.parse(options.body);
+       writes.push(body);
+@@ -351,7 +355,11 @@ async function mountPage() {
+   await vi.waitFor(() => expect(root.querySelector<HTMLElement>(`[data-source="${worldKey}"]`)!.textContent).toContain('Fixture World'));
+   const view = EditorView.findFromDOM(root.querySelector<HTMLElement>('.cm-editor')!);
+   const button = (label: string) => [...root.querySelectorAll<HTMLButtonElement>('.prompt-actions button')].find((el) => el.textContent === label)!;
+-  const edit = (text: string) => view.dispatch({ changes: { from: 0, insert: text }, userEvent: 'input.type' });
++  const edit = (text: string) => {
++    const flag = root.querySelector<HTMLButtonElement>('.prefix-flag')!;
++    if (flag.getAttribute('aria-expanded') === 'false') flag.click();
++    view.dispatch({ changes: { from: 0, insert: text }, userEvent: 'input.type' });
++  };
+   return { root, life, router, view, button, edit };
+ }
+ 
+@@ -362,4 +370,28 @@ it('omits the World configuration shortcut when the manifest disables configurat
+   expect(root.querySelector<HTMLElement>('.prompt-settings-link')!).toBeNull();
+ });
+ 
++it('keeps manual application copy and controls when the API does not declare a policy', async () => {
++  const { root, button, edit } = await mountPage();
++  expect(root.querySelector('.pagedesc')?.textContent).toBe(S.introDesc);
++  expect(button(S.reloadSession)).toBeDefined();
++  expect(button(S.restartSession)).toBeDefined();
++  edit('Updated ');
++  await vi.waitFor(() => expect(button(S.saveToFile).disabled).toBe(false));
++  button(S.saveToFile).click();
++  await vi.waitFor(() => expect(root.querySelector('.prompt-status')?.textContent).toBe(S.pendingApply));
++});
++
++it('shows next-turn save semantics without an Apply action and retains Clear conversation', async () => {
++  application = 'next-turn';
++  const { root, button, edit } = await mountPage();
++  expect(root.querySelector('.pagedesc')?.textContent).toBe(S.nextTurnIntro);
++  expect(button(S.reloadSession)).toBeUndefined();
++  expect(button(S.restartSession)).toBeDefined();
++  edit('Updated ');
++  await vi.waitFor(() => expect(button(S.saveToFile).disabled).toBe(false));
++  button(S.saveToFile).click();
++  await vi.waitFor(() => expect(root.querySelector('.prompt-status')?.textContent).toBe(S.savedNextTurn));
++  expect(sessionWrites).toEqual([]);
++});
++
+ });
+diff --git a/tests/web/local-security.test.ts b/tests/web/local-security.test.ts
+index 9dec735..be2a9f6 100644
+--- a/tests/web/local-security.test.ts
++++ b/tests/web/local-security.test.ts
+@@ -82,5 +82,6 @@ describe('WebApp localhost 安全边界', () => {
+   it('WebSocket upgrade 拒绝外站 Origin', async () => {
+     const { port } = await start();
+     expect(await rejectedWebSocket(`ws://127.0.0.1:${port}/ws/debug`, 'https://evil.example')).toBe(true);
++    expect(await rejectedWebSocket(`ws://127.0.0.1:${port}/ws/status`, 'https://evil.example')).toBe(true);
+   });
+ });
+diff --git a/tests/web/shell.test.ts b/tests/web/shell.test.ts
+index 7a21909..bbdb9af 100644
+--- a/tests/web/shell.test.ts
++++ b/tests/web/shell.test.ts
+@@ -517,6 +517,26 @@ describe('provider 那一段', () => {
+ });
+ 
+ describe('底部运行控制', () => {
++  it('后台状态更新按钮和文字，迟到的启动 HTTP 快照与释放后的回调不能覆盖它', async () => {
++    let release: (value: unknown) => void = () => {};
++    const delayed = new Promise((resolve) => { release = resolve; });
++    vi.stubGlobal('fetch', (url: unknown) => String(url) === '/api/status'
++      ? delayed
++      : Promise.resolve({ ok: true, status: 200, text: () => Promise.resolve('{}') }));
++    const { shell, el } = await mkShell({ capabilities: { run: true } });
++    shell.setRunStatus({ loop: { paused: true } });
++    expect(el.find('rail-runstate')!.textContent).toBe('已暂停');
++    release({ ok: true, status: 200, text: () => Promise.resolve('{"loop":{"paused":false}}') });
++    await flush();
++    expect(el.find('rail-run')!.getAttribute('aria-label')).toBe('继续运行');
++    shell.setRunStatus({ loop: { paused: false } });
++    expect(el.find('rail-runstate')!.textContent).toBe('运行中');
++    expect(el.find('rail-run')!.getAttribute('aria-label')).toBe('暂停运行');
++    shell.dispose();
++    shell.setRunStatus({ loop: { paused: true } });
++    expect(el.find('rail-runstate')!.textContent).toBe('运行中');
++  });
++
+   it('按当前暂停态调用 pause / resume，并立即切换按钮语义', async () => {
+     const seen: string[] = [];
+     vi.stubGlobal('fetch', (url: unknown) => {

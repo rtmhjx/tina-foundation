@@ -1,0 +1,48 @@
+{
+  "name": "cortico-world-canbot",
+  "version": "0.8.0-candidate.8",
+  "private": true,
+  "type": "module",
+  "description": "CANBOT multimodal observations, device-timed factory macros and revisioned logic storage",
+  "main": "./src/index.mjs",
+  "keywords": [
+    "cortico-world",
+    "cortico"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "cortico": {
+    "kind": "world",
+    "api": 6,
+    "displayName": "CANBOT",
+    "describe": "describe.json",
+    "tags": [
+      "voice",
+      "video",
+      "real-world",
+      "external-setup",
+      "experimental",
+      "sensitive-data"
+    ]
+  },
+  "files": [
+    "src",
+    "scripts",
+    "README.md",
+    "HEAD-CHANNEL.md",
+    "AUDIO-ANALYSIS.md",
+    "describe.json",
+    "CHANGELOG.md",
+    "UPGRADE-ROLLBACK.md",
+    "tests",
+    "SHA256SUMS",
+    "RELEASE-EVIDENCE.md"
+  ],
+  "scripts": {
+    "test": "node --test tests/*.test.mjs src/voice/*.test.mjs src/coordinated/*.test.mjs"
+  },
+  "os": [
+    "linux"
+  ]
+}

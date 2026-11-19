@@ -1,0 +1,13 @@
+{
+  "name": "cortico-world-codex-bridge",
+  "version": "0.3.0-tina.1",
+  "private": true,
+  "type": "module",
+  "description": "Direct SSH delegation to a Windows Codex exec worker, with durable result events",
+  "license": "MIT",
+  "engines": { "node": ">=24" },
+  "os": ["linux"],
+  "main": "./src/world.mjs",
+  "keywords": ["cortico-world"],
+  "cortico": { "kind": "world", "api": 6, "displayName": "Windows Codex Bridge", "describe": "describe.json", "tags": ["external-setup", "experimental", "unsafe"] }
+}

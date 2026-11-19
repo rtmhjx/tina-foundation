@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../bots/cormini/webui/client.ts"],
+  "sourcesContent": ["/**\n * Cormini WebUI \u7684\u6D4F\u89C8\u5668\u5165\u53E3\uFF1B\u9762\u677F\u58F0\u660E\u89C1 ../persona/webUiSurface.ts\u3002\n * \u53D8\u4F53\u4ECE ./workspace.ts \u4E0E ./history.ts \u53D6\u8FD9\u4E24\u5757\uFF0C\u81EA\u5DF1\u7684\u9762\u677F\u5728\u5404\u81EA\u7684\u5165\u53E3\u91CC\u8865\u3002\n */\n\nimport type { WebUiClientBundle } from 'cortico/web/shared/client-panel.ts';\nimport './style.css';\nimport { historyPanel } from './history.ts';\nimport { createWorkspacePanel } from './workspace.ts';\n\nconst bundle: WebUiClientBundle = {\n  panels: {\n    workspace: createWorkspacePanel(),\n    history: historyPanel,\n  },\n};\n\nexport default bundle;\n"],
+  "mappings": "+HAUA,IAAMA,EAA4B,CAChC,OAAQ,CACN,UAAWC,EAAqB,EAChC,QAASC,CACX,CACF,EAEOC,EAAQH",
+  "names": ["bundle", "createWorkspacePanel", "historyPanel", "client_default"]
+}

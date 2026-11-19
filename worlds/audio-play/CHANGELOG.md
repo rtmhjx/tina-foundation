@@ -1,0 +1,51 @@
+# 更新日志 · cortico-world-audio-play
+
+每个版本一节 `## <版本号>`；扩展市场按节显示更新说明。
+
+## 0.4.0-canbot.1
+
+- 本地 CANBOT 适配：只在 custom 后端将 helper 退出码 76 识别为 `outcome_unknown`，优先于取消和超时；不自动重放。
+- `skip` / `clear` 的当前项文案为 `cancel_requested`，不提前确认远端设备停止。
+- 未知结算保留 `audio-play.failed` 事件，包括 World 停止与自动播放冷却期间；其他后端及普通取消语义不变。
+- 增加真实假子进程、队列事件和 POSIX SIGTERM 测试；Windows 的 POSIX 用例明确跳过，不作为通过证据。
+- 本地源文件与包交付，不等于正式挂载或设备实测。上游来源及文件哈希见随包记录。
+
+## 0.4.0
+
+- 新增「队列」页：实时显示正在播放与排队中的音频，可按条移除、跳过当前、清空队列；页面关闭时不产生轮询。
+- 队列变化通过 WebUI 推送更新；当前条目的已播时长在页面里本地计时。
+- 新增 `cortico.webUiClient`：`dist/webui.js` 是手写的浏览器 bundle，没有构建步骤，也没有新增运行时依赖。
+- 官方 `check:extension` 与自检同步覆盖面板声明、快照接口与推送。
+
+## 0.3.0
+
+- 新增 `audio_queue`：`list` 查看当前与排队条目，`skip` 跳过当前这条，`remove` 按 id 删掉排队中的一条，`clear` 停止当前并清空队列。
+- 队列从 promise 链改成显式条目，每条有 id；`audio_play` 回执带上 id（`q7`）与前面还有几条。
+- 跳过和清空是取消：停掉播放器进程，不发 `audio-play.failed`。
+- 手动播放与事件自动播放共用同一个队列，事件音频也能跳掉；`audio_watch status` 显示当前条目与队列深度。
+- 队列只在内存里，重启应用不保留。
+
+## 0.2.0
+
+- 新增 `worlds.audio-play.backend`：选择播放后端。`auto` 保持平台默认，也可以指定 `wpf` / `ffplay` / `mpv` / `vlc` / `afplay` / `paplay` / `aplay`，或用 `custom`。
+- 新增 `worlds.audio-play.command`：后端为 `custom` 时执行自定义命令，`{file}` 与 `{volume}` 是占位符；命令不经过 shell。
+- `audio_watch` 的 `set` 可以更换播放后端，`status` 会显示当前后端与自定义命令。
+- `audio_play` 改为非阻塞：开始播放（或排队）后立刻返回，不再等播放结束。
+- 成功不发事件；播放失败发 `audio-play.failed` 事件，正文带音频来源、音量与原因，默认投递到对话事件流。取消和 World 停止不算失败。
+- 自动播放失败也发同一条事件；连续失败时 30 秒内最多通知一次，避免事件潮。
+- 回执从「播放完了」改为「开始播放 / 已排队」；播放器和自动播放仍然共用一条串行队列。
+- 新增空的「提示词」页（`src/ENV_PROMPT.md`）；默认不往系统前缀加内容，部署者可以补充播放约定。
+- Windows 的 WPF 打不开格式时，错误提示会建议换一个后端。
+
+## 0.1.1
+
+- 新增 `worlds.audio-play.autoPlay` 与 `watchEvents`：监听事件库里的指定事件（默认 `tts.voice`），把带音频附件的新事件播放出来；只播打开监听之后的事件，重启不补。
+- 新增 `audio_watch` 工具：桌宠可以 `start` / `stop` / `set` 监听类型 / `status`，改动写入配置。
+- 事件里的音频优先取附件句柄，其次取事件 meta 里的文件路径；与 `audio_play` 共用同一条播放队列。
+
+## 0.1.0
+
+- 首个版本：`audio_play` 工具，接受本地音频路径或 `log:` / `mem:` 句柄（比如 `tts_speak` 回执里的路径与附件句柄），在本机扬声器播放并等待结束，只回成功或失败。
+- Windows 用系统自带的 PowerShell + WPF MediaPlayer，macOS 用 `afplay`，Linux 依次尝试 `ffplay` / `mpv` / `paplay` / `aplay`；没有 npm 运行时依赖。
+- 配置 `worlds.audio-play`：`enabled`、`volume`、`timeoutMs`；不需要密钥。
+- 句柄先落成临时文件，播放结束即删；同一时间只放一段，后到的调用排队。

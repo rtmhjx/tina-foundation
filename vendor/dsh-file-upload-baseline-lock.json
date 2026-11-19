@@ -1,0 +1,200 @@
+{
+  "format": 1,
+  "package": "@deepseek-ai/dsh-client-file-upload",
+  "version": "0.1.5-rc.2",
+  "sourceCommit": "fb2c4b9e698e30edb738bca4cf0618587db7d203",
+  "originalSource": "deepseek-harness/packages/client/file-upload",
+  "sourceAlreadyDirty": false,
+  "sourceStatus": "",
+  "sourceFiles": [
+    {
+      "path": "package.json",
+      "bytes": 2296,
+      "sha256": "b3343502dbe675c51534da58ef1343f329f3876665e3325bf5db0cd2f3aba63d"
+    },
+    {
+      "path": "README.i18n.yaml",
+      "bytes": 437,
+      "sha256": "a6e37456afc11efaed9d78938b1ba3369958c9d5718d80209321e351bb7cce67"
+    },
+    {
+      "path": "README.md",
+      "bytes": 5857,
+      "sha256": "cc44a7ce715d6a16a5413f924f8a54c5244b9dc85b7a9115b7b2086796abb41d"
+    },
+    {
+      "path": "README.zh.md",
+      "bytes": 5430,
+      "sha256": "a57f1fcbe3460b1730a88fae58594a9c61e26079ee218cdd349c8ba2ae0fec56"
+    },
+    {
+      "path": "src/client/contract.ts",
+      "bytes": 1491,
+      "sha256": "9be4e5d89284e838924112dd94eb40ede2e537970d7f0fbc2ac38e67f29ba068"
+    },
+    {
+      "path": "src/client/index.ts",
+      "bytes": 797,
+      "sha256": "0055131531cd71087e2615410bb7bd7d2fc8bb1bcff78d85b2cc07a9789aef61"
+    },
+    {
+      "path": "src/client/runtime.ts",
+      "bytes": 13340,
+      "sha256": "cbbdcd4ea1a0b7e92716bb6b52cd67a7e14df8078d8cd07fc3b699ebdde4f933"
+    },
+    {
+      "path": "src/http-route.ts",
+      "bytes": 2776,
+      "sha256": "dc91debb0862f7c153559dfc172cc95f185f47c25337feb27ec4f4c5e5db76e0"
+    },
+    {
+      "path": "src/index.ts",
+      "bytes": 10031,
+      "sha256": "6ef4dcc203b96399f34b9d735ef9a6641424ea84f3883c90f71715f905dac0b2"
+    },
+    {
+      "path": "src/protocol.ts",
+      "bytes": 134,
+      "sha256": "0d8ce6974fcdec65e395c31322fb0e0393b725220165f6a7b5e81909f44efcb8"
+    },
+    {
+      "path": "src/types.ts",
+      "bytes": 1375,
+      "sha256": "811ef38c6d9b6582d2476ce62064bf1e91cb1e98117b83733e1a71effb375892"
+    },
+    {
+      "path": "tests/file-upload-http.host.spec.ts",
+      "bytes": 5458,
+      "sha256": "9593d1ec103f0eb7f6255bc40d8480163a9f1a4bd483fc3e6e053321f5f5a0fb"
+    },
+    {
+      "path": "tests/file-upload.client.spec.ts",
+      "bytes": 21871,
+      "sha256": "2ab27ff097621df7a5eca05f8bad517aff23dbf046dc1216180c3755e19908b5"
+    },
+    {
+      "path": "tsconfig.client.json",
+      "bytes": 597,
+      "sha256": "c9ddd579e40e643c5f37fdd6fea79fccd5b4abbacf25128dd8c4c1610892af58"
+    },
+    {
+      "path": "tsconfig.host.json",
+      "bytes": 660,
+      "sha256": "0365602ed6693fe0948040396d34d33cf335a82416ec11efacd345594b08bfff"
+    },
+    {
+      "path": "tsconfig.json",
+      "bytes": 122,
+      "sha256": "9ae2773ce422b78211f4ed8c2d4f6adb6737a9d0f33c4c392b1ea01a41bec759"
+    },
+    {
+      "path": "tsdown.config.ts",
+      "bytes": 143,
+      "sha256": "5eef4e1f45f56d3f8f907c78beeb666e31d69e39ec561379385b94572fb53449"
+    }
+  ],
+  "sourceTreeSha256": "ec38bc44480b3be061d31947d5d9d5005c9f6e2cff9fd2e45357713e353923ee",
+  "runtimePackageOutput": "node_modules/.packages/@deepseek-ai+dsh-client-file-upload@0.1.5-rc.2-794481ad33",
+  "runtimeFiles": [
+    {
+      "path": "lib/client.js",
+      "sha256": "90d4a010e44f58872c8ea172fa80445ce0e5baf54c886418ae7302f8166c6c53"
+    },
+    {
+      "path": "lib/index.js",
+      "sha256": "3c664a5e2b6d1fe452c1168029c2f2c49d48e22a329dcdcdb1259f73f8e90f44"
+    },
+    {
+      "path": "lib/typert.host.d.ts",
+      "sha256": "5e2d26ee86d0fe170dac8cd3f5854e67bdea334c57f40a5766ace57b8304c17d"
+    },
+    {
+      "path": "lib/typert.host.js",
+      "sha256": "a449e63be2cff6c8c97d7decf31a8ddd380ed7db3a5678276a15543392f89ca3"
+    },
+    {
+      "path": "lib/typert.remote-client.d.ts",
+      "sha256": "a9f6e5edf94e9a2df4f4a92f7b13eca68c564d8073a1a71f7355db3fe774f2c8"
+    },
+    {
+      "path": "lib/typert.remote-client.js",
+      "sha256": "ed6183daecace180e8bf8dcb3f2499da33089acc1f62e3d4cd81b1aa566690c6"
+    },
+    {
+      "path": "lib/types/client/contract.d.ts",
+      "sha256": "d07c4a78cd35d82a40897a00d38ef6ebf5dd1e8085b9f386940092f367ad79c4"
+    },
+    {
+      "path": "lib/types/client/contract.js",
+      "sha256": "8d2365441ba5a21d8a7d4dbf9912d645c280066ae6f07d071b5dc37e184f2522"
+    },
+    {
+      "path": "lib/types/client/index.d.ts",
+      "sha256": "dde37ef296beb8b509d4b8f2308d8be9cf87eca79b017401a7581d5e0e059ae7"
+    },
+    {
+      "path": "lib/types/client/index.js",
+      "sha256": "4004c77cadbe6baf2abb228831346718d31040d2e9b2c67d92c28eac44476d4b"
+    },
+    {
+      "path": "lib/types/client/runtime.d.ts",
+      "sha256": "11cf111b5c5ffc6171b74c702b39cb2ba04df77f50552b74643350373c9f0755"
+    },
+    {
+      "path": "lib/types/client/runtime.js",
+      "sha256": "ca94da2dd9184b6c91c0fe7483ab9518e558865fdb301cb10304782fb79608fd"
+    },
+    {
+      "path": "lib/types/http-route.d.ts",
+      "sha256": "68dd2997e37421147f141aa260b45a0d8d1e119209b67cdc2dc9b31c6b24fb14"
+    },
+    {
+      "path": "lib/types/http-route.js",
+      "sha256": "b58a27b02977b7eee983d6c0840a5e7c51f5e406874cbf6d5d02391ff64a1596"
+    },
+    {
+      "path": "lib/types/index.d.ts",
+      "sha256": "996361d80513125f7d181fd7a578035061d569b2131d7f26e9b7af01968646ea"
+    },
+    {
+      "path": "lib/types/index.js",
+      "sha256": "54684883268a0652098a6a4fd7e164e21c6e040bc1a64bb7b51836c1ba2823da"
+    },
+    {
+      "path": "lib/types/protocol.d.ts",
+      "sha256": "41333bd6d5795c708b3ba1d5012341b62c209e91c305ee5d6412426555c5ee6e"
+    },
+    {
+      "path": "lib/types/protocol.js",
+      "sha256": "337d839b17929c6ff5d46d294c7d35334478c5cf8b6cb296bd27340de51cdcd7"
+    },
+    {
+      "path": "lib/types/types.d.ts",
+      "sha256": "68919d5fe46028fcb5981f06635d68d2d4a6429be91cb203f399034631b09953"
+    },
+    {
+      "path": "lib/types/types.js",
+      "sha256": "e2f87ba1475580e8f4f3523d1df3ed6238f373dd9e638bf64a87c0a9f552febe"
+    },
+    {
+      "path": "package.json",
+      "sha256": "b3343502dbe675c51534da58ef1343f329f3876665e3325bf5db0cd2f3aba63d"
+    },
+    {
+      "path": "README.i18n.yaml",
+      "sha256": "a6e37456afc11efaed9d78938b1ba3369958c9d5718d80209321e351bb7cce67"
+    },
+    {
+      "path": "README.md",
+      "sha256": "cc44a7ce715d6a16a5413f924f8a54c5244b9dc85b7a9115b7b2086796abb41d"
+    },
+    {
+      "path": "README.zh.md",
+      "sha256": "a57f1fcbe3460b1730a88fae58594a9c61e26079ee218cdd349c8ba2ae0fec56"
+    }
+  ],
+  "sourceArchive": "dsh-file-upload-baseline-source.tgz",
+  "sourceArchiveSha256": "d158c06a264fcc5d24e34a1bd6e0e78bde4c00c99ad72badb10c63df392b69c2",
+  "runtimeArchive": "dsh-file-upload-baseline-runtime.tgz",
+  "runtimeArchiveSha256": "edaf252e4518fd1dc10d444709e136e142a4384afa66af520112631257755b0b"
+}

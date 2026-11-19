@@ -1,0 +1,14 @@
+{
+  "name": "cortico-world-stt",
+  "version": "0.3.0",
+  "gitHead": "74b2b609fe95c928feb631574c80232f6b50ae6b",
+  "repository": {
+    "url": "git+https://github.com/AqualCross/cortico-world-stt.git",
+    "type": "git"
+  },
+  "integrity": "sha512-EiS93KJLr+NEx/jE8sr6UeuuCTKwJGU/Dlq9jyOBMqimO3G7ekYCXXu/hAp4e83FuNVszm+PCW/JyVDIRE0UVQ==",
+  "tarSha256": "0e8642ee8685261aa261a6e0e2b1563c568042192b9d5c22b83d4df59efed8dd",
+  "api": 6,
+  "license": "MIT",
+  "dependencies": {}
+}

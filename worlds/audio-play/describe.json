@@ -1,0 +1,124 @@
+{
+  "tools": [
+    {
+      "name": "audio_play",
+      "description": "Start playing an audio file through the local speakers and return at once. The audio comes from a local file path or a log:/mem: handle, such as the path or handle returned by tts_speak. It only plays sound; it does not send anything. A playback failure arrives later as an audio-play.failed event.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "audio": {
+            "type": "string",
+            "description": "Audio file path (absolute, or relative to the bot workspace) or a log:/mem: handle, e.g. the path or log: handle returned by tts_speak."
+          },
+          "volume": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Playback volume 0–100 for this call; omit to use the configured volume."
+          }
+        },
+        "required": [
+          "audio"
+        ]
+      },
+      "tags": [
+        "act"
+      ],
+      "summary": {
+        "zh": "把一段音频（本地文件或 log:/mem: 句柄，比如 tts_speak 回执里的那个）交给本机扬声器，开始播放后立刻返回；失败会发 audio-play.failed 事件，成功不再回报。",
+        "en": "Start playing an audio file or a log:/mem: handle (such as the one returned by tts_speak) through the local speakers and return at once; a failure arrives later as an audio-play.failed event, and success is silent."
+      }
+    },
+    {
+      "name": "audio_watch",
+      "description": "Read or change playback settings. start turns on automatic playback of event audio for the configured event types (tts.voice by default) and plays new events that carry an audio attachment; stop turns it off; set changes the watched event types and/or the playback backend without changing whether watching is on; status shows the settings and last playback. Every change is saved to the config. Playback failures arrive as audio-play.failed events; success is silent.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "start",
+              "stop",
+              "set",
+              "status"
+            ],
+            "description": "start = watch new events and play their audio; stop = stop watching; set = change the watched types and/or the playback backend; status = show the current settings."
+          },
+          "events": {
+            "type": "string",
+            "description": "For start and set: comma-separated event types to watch, e.g. tts.voice. For start it defaults to the configured list."
+          },
+          "backend": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "wpf",
+              "ffplay",
+              "mpv",
+              "vlc",
+              "afplay",
+              "paplay",
+              "aplay",
+              "custom"
+            ],
+            "description": "For start and set: the playback backend. auto = platform default; wpf = Windows system player; ffplay, mpv, vlc, afplay, paplay, aplay = that command; custom = the command configured in the settings."
+          }
+        },
+        "required": [
+          "action"
+        ]
+      },
+      "tags": [
+        "act"
+      ],
+      "summary": {
+        "zh": "打开或关闭事件音频的自动播放，更换监听的事件类型或播放后端，或查看当前设置；播放新事件里的音频附件。",
+        "en": "Turn automatic playback of event audio on or off, change the watched event types or the playback backend, or read the current settings; plays audio attachments on new events."
+      }
+    },
+    {
+      "name": "audio_queue",
+      "description": "Read or change the playback queue. list shows what is playing now and what is waiting; skip requests cancellation of the current item; remove drops one waiting item by id; clear requests cancellation and drops everything waiting. cancel_requested does not confirm that a remote device stopped. The queue waits for the player subprocess to close before advancing. Ordinary cancellations are silent; custom-helper exit 76 remains a visible outcome_unknown audio-play.failed event, even after cancellation. Never automatically replay an unknown outcome. Manual plays and watched event audio share one queue; ids come from an audio_play receipt or from list.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "list",
+              "skip",
+              "remove",
+              "clear"
+            ],
+            "description": "list = current item and waiting items; skip = request cancellation of the current item; remove = drop one waiting item; clear = request cancellation and drop all waiting items."
+          },
+          "id": {
+            "type": "string",
+            "description": "For remove: the queue id to drop, e.g. q7. The current item cannot be removed; use skip."
+          }
+        },
+        "required": [
+          "action"
+        ]
+      },
+      "tags": [
+        "act"
+      ],
+      "summary": {
+        "zh": "查看或调整播放队列；跳过和清空仅请求取消，不确认设备已停止。custom helper 退出 76 的未知结算即使发生在取消之后，也保留可见失败事件，不自动重放。",
+        "en": "Read or change the playback queue. Skip and clear request cancellation, without confirming device settlement. Custom-helper exit 76 remains a visible unknown-outcome failure after cancellation; never replay automatically."
+      }
+    }
+  ],
+  "events": [
+    {
+      "type": "audio-play.failed",
+      "description": {
+        "zh": "播放失败：正文带音频来源、音量与原因，没有附件；手动播放和自动播放失败都会发，成功不发。",
+        "en": "A failed playback: the text carries the audio reference, volume and reason, with no attachment; both manual and watched playback emit it, success is silent."
+      },
+      "trigger": "debounce"
+    }
+  ]
+}

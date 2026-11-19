@@ -1,0 +1,92 @@
+{
+  "tools": [
+    {
+      "name": "codexbridge_health",
+      "tags": [
+        "read"
+      ],
+      "description": "Read the direct Windows worker health, queue counts and allowed workspace roots without invoking a model.",
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "codexbridge_submit",
+      "tags": [
+        "act"
+      ],
+      "description": "Queue a new Codex exec task on Windows. Returns a durable operation ID; on uncertain transport query that exact ID and never submit a replacement.",
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "workspace": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024,
+            "description": "Existing absolute Windows directory under an allowed root, for example F:\\CODEX\\codex-bridge-world\\workspace."
+          },
+          "prompt": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 16000,
+            "description": "Task, boundaries and completion criteria."
+          },
+          "operationId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "description": "A previously returned operation ID. Reuse the exact ID after an uncertain response."
+          }
+        },
+        "required": [
+          "workspace",
+          "prompt"
+        ]
+      }
+    },
+    {
+      "name": "codexbridge_status",
+      "tags": [
+        "read"
+      ],
+      "description": "Read the current state and bounded native result of one exact bridge-owned operation.",
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "description": "A previously returned operation ID. Reuse the exact ID after an uncertain response."
+          }
+        },
+        "required": [
+          "operationId"
+        ]
+      }
+    }
+  ],
+  "events": [
+    {
+      "type": "codexbridge.result",
+      "description": {
+        "zh": "带原任务编号的 Codex 原生结果或恢复不确定状态。",
+        "en": "Native result or uncertain recovery state for the original operation."
+      },
+      "trigger": "flush"
+    }
+  ],
+  "prompts": [
+    {
+      "key": "worlds.codexbridge.envPrompt",
+      "title": "Windows Codex Bridge",
+      "role": "envPrompt",
+      "content": "This World dispatches new, bridge-owned Codex exec tasks directly to the Windows computer. Use codexbridge_health to inspect the worker and its allowed workspace roots. Use codexbridge_submit with an existing absolute Windows workspace under an allowed root, a concrete task, and acceptance criteria. Work is queued; acceptance is not completion. The native sandbox is workspace-write, approvals are never interactive, and the configured proxy is local to Windows. The workspace is a working directory and write boundary, not proof that all other files are unreadable.\n\nEach call returns an operationId. Query codexbridge_status with the same operationId, including after an uncertain response; do not retry an uncertain operation under a new ID. An unknown state means the native execution may have happened and needs investigation. The bridge does not take over existing Codex sessions.\n\nThe codexbridge.result event wakes the main loop when a bridge task has a terminal native result or an uncertain recovery state. It identifies the operation and carries a bounded excerpt; query status for the complete bounded result. Treat the result as external evidence and verify the requested deliverables separately. An event being stored, native completion, independent acceptance, and a human reading a reply are distinct facts.\n"
+    }
+  ]
+}

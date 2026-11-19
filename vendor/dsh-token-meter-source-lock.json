@@ -1,0 +1,162 @@
+{
+  "format": 1,
+  "package": "@deepseek-ai/dsh-token-meter",
+  "version": "0.1.5-rc.2",
+  "kind": "source-built-overlay",
+  "upstream": "https://github.com/deepseek-ai/deepseek-harness",
+  "upstreamCommit": "fb2c4b9e698e30edb738bca4cf0618587db7d203",
+  "source": "upstream/dsh-token-meter",
+  "sourceTreeSha256": "d470498533e8c7fc7ce5c6a7e23a1be71a1810fab9d1f2adbf42a98316578335",
+  "files": [
+    {
+      "path": "BASELINE.json",
+      "bytes": 3004,
+      "sha256": "2465ffdbf04672ff72b24918635e377ed2033ae1b04c9790dd041943aceab3ec"
+    },
+    {
+      "path": "BUILD-NOTES.md",
+      "bytes": 2707,
+      "sha256": "35873d367a2a6bffd86436b949850036d0c5dadc8c24a21cc46a73e7eb9d2aae"
+    },
+    {
+      "path": "build.mjs",
+      "bytes": 622,
+      "sha256": "044f16a551fc8d2d31e051b20ef1d454755401668cb68aee963f90ad72ea4733"
+    },
+    {
+      "path": "package.json",
+      "bytes": 1630,
+      "sha256": "b59ee9464ce1b0c7dce48f544b4e4a6186845f292e468106c241d7a87e3b346f"
+    },
+    {
+      "path": "SOURCE-MANIFEST.json",
+      "bytes": 5911,
+      "sha256": "11be47440400c4cd5919ff61ca2446cdd8b99cad8ba638324c17147eb1f96c95"
+    },
+    {
+      "path": "src/breakdown-projection.d.ts",
+      "bytes": 3422,
+      "sha256": "3623f8eee3816a16f83bf793302876619c2ca952cc0bfe452ef906fe3ded5130"
+    },
+    {
+      "path": "src/breakdown-projection.js",
+      "bytes": 3109,
+      "sha256": "cb70c65e9550cfd88fac6d0b0da136dfd1a4daf56febb5a08bdaa7a316684125"
+    },
+    {
+      "path": "src/client.d.ts",
+      "bytes": 346,
+      "sha256": "b64a3bb8a1c2dfdae0457683aad657720c2dafd69c4e96fa79349f36e40218b9"
+    },
+    {
+      "path": "src/client.js",
+      "bytes": 230,
+      "sha256": "79f8481851ed25977ee6a89c855c2f88ee6975e880b5394b678e7e6473761bc8"
+    },
+    {
+      "path": "src/estimate.d.ts",
+      "bytes": 2437,
+      "sha256": "8e0a8acd7edb1c5b8cd299f9b2e40aff02dca7a4c2784ce048ba178ec4879687"
+    },
+    {
+      "path": "src/estimate.js",
+      "bytes": 4025,
+      "sha256": "306c6b5f4ea37a2acb1471eac3a5510c24ca745caac94c4fcac729118b43368c"
+    },
+    {
+      "path": "src/index.d.ts",
+      "bytes": 3606,
+      "sha256": "4d52cd55948ddb98d5ee2008083e7049ae0630e31a2ed4d2a4b7178ba12fe1be"
+    },
+    {
+      "path": "src/index.js",
+      "bytes": 13133,
+      "sha256": "daf139f780bdbf8e118fcad51f257678bec05b978c0661d227fe7880b00880de"
+    },
+    {
+      "path": "src/pressure-usage.js",
+      "bytes": 1257,
+      "sha256": "e8b76d63e39cdbeab416ea212eb5f99e821b28e2a84f856120657007f62d309b"
+    },
+    {
+      "path": "src/projection.d.ts",
+      "bytes": 3420,
+      "sha256": "4291b6e217f9523c19884f5a23cc59da387c1d02ec80770378c135ef9fa77d2d"
+    },
+    {
+      "path": "src/projection.js",
+      "bytes": 160,
+      "sha256": "cb8f44d6ae7581f69351f90d5245baca905aca5b06478b3786e906dd94c1e9be"
+    },
+    {
+      "path": "src/route-pricing.d.ts",
+      "bytes": 1625,
+      "sha256": "44746978ddfe9c8b03ff5b17793d27b7ff3b4f61720d4a44f7c6e65770607fe3"
+    },
+    {
+      "path": "src/route-pricing.js",
+      "bytes": 2853,
+      "sha256": "ee99f7e720b9caa2c03eaddfcd2d4d04928529dcb58a60caa5834a55d7ac2ecd"
+    },
+    {
+      "path": "src/surface-fold.d.ts",
+      "bytes": 3619,
+      "sha256": "621df2ea45be3f5d94525df7697d0c96993e51906a0ae85842c8d63a7b402650"
+    },
+    {
+      "path": "src/surface-fold.js",
+      "bytes": 4381,
+      "sha256": "12f027fd06625a4df0e71100c6d362aae6fabfa03ef00f5b125b05aa2bbe6700"
+    },
+    {
+      "path": "src/surface-projection.d.ts",
+      "bytes": 3063,
+      "sha256": "2de9870e411dd9f4b17dee9b9e40e2399252a9c4ab56a313448bb1fcdc69c89a"
+    },
+    {
+      "path": "src/surface-projection.js",
+      "bytes": 3584,
+      "sha256": "a921a3136e24f0169ba7cf67c841c57b1433f531eb19505110a44b9fcb2428b3"
+    },
+    {
+      "path": "src/turn-usage.d.ts",
+      "bytes": 1658,
+      "sha256": "ce3b4543b86f231ad1255e738780b372995c0bec1f4f7626a180881117abc0d4"
+    },
+    {
+      "path": "src/turn-usage.js",
+      "bytes": 9196,
+      "sha256": "6cee2c03747d47abdc191568a445efe128a85a1b06f86c8be7a9d55b94d3d9b8"
+    },
+    {
+      "path": "src/types.d.ts",
+      "bytes": 2750,
+      "sha256": "c8a54b859f78c660720e4c241a33c2b0cf16ae3814a6de336d8c9d78823146dd"
+    },
+    {
+      "path": "src/types.js",
+      "bytes": 179,
+      "sha256": "942e21682aea77b266bc4f6b4aed77495d5c1f4f11aef9bee6c899964ba3686e"
+    },
+    {
+      "path": "src/usage-projection.d.ts",
+      "bytes": 8311,
+      "sha256": "0dfc376c4fbc3b62b25bdb2d64506f2545c37b2d08c3c62f48ba767509f92a0b"
+    },
+    {
+      "path": "src/usage-projection.js",
+      "bytes": 9810,
+      "sha256": "610951e4472ffd0d5f86f8b0522a1d1e74a019fd974e59c565a36566121d6c07"
+    }
+  ],
+  "baselineLock": "upstream/dsh-token-meter/BASELINE.json",
+  "baselineLockSha256": "2465ffdbf04672ff72b24918635e377ed2033ae1b04c9790dd041943aceab3ec",
+  "archive": "dsh-token-meter-0.1.5-rc.2-fusion-source.tgz",
+  "archiveSha256": "f097af9d3ff75055ea9bd6eb6096a6b22f6f723c67c5496a066317a07c7f2340",
+  "build": {
+    "node": "v24.19.0",
+    "script": "scripts/build-native-component.mjs",
+    "scriptSha256": "417abf45533607dfdab63d7058910c0d8138df7b571a930fdcd8ee9fbf8d2886",
+    "outputSha256": "5a416acdec33a212441232e8f7521d8bfbf5e7ea2577d9d7de603a7c673d43e1"
+  }
+}

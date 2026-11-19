@@ -1,0 +1,46 @@
+{
+  "format": 1,
+  "package": "@deepseek-ai/dsh-session",
+  "version": "0.1.5-rc.2",
+  "sourceOrigin": "F:\\AI\\\u63a2\u7d22\\deepseek-harness\\packages\\core\\session",
+  "runtimeBaseline": "F:\\CODEX\\tina-cordis-host-plugin\\.test-runtime\\dsh\\node_modules\\@deepseek-ai\\dsh-session",
+  "runtimeBaselineSha256": "c12ce68ca52f7eb98311208cdaa6463aaf37f2a368b6de34cd441d0ed2dedc45",
+  "sourceFiles": [
+    {
+      "path": "src/index.ts",
+      "sha256": "607bbb8d50c1ed4fd5e470f921be737d5cd8589a2bc52c8560aa2cbb4822ec99"
+    },
+    {
+      "path": "src/invariant.ts",
+      "sha256": "1b4ce65c6d5210473330800622dc7850012038c7a121d63ca8675666785f8582"
+    },
+    {
+      "path": "src/known-event-types.ts",
+      "sha256": "8d60e002f68a641745ec2416c7c594e7b8f95f08fab1200aaa6a637e365500ca"
+    },
+    {
+      "path": "src/preparation.ts",
+      "sha256": "51bcd61f505928fc1d98cc59ecfd5e0a34b3a5cbd3ecb7937caef0da87b7baa5"
+    },
+    {
+      "path": "src/repair.ts",
+      "sha256": "985740ced27041c1964ca721caea9099703af8b32fa6b610b537909c86f7a76a"
+    },
+    {
+      "path": "src/request-header.ts",
+      "sha256": "abd8ef57c34ad6ddbc21ba83398092f6aff64ac5c0f38efb353cebb04f654ad4"
+    },
+    {
+      "path": "src/seq-ranges.ts",
+      "sha256": "9f746691995926cb17d3dd19da04871f2355be40c798ed5a8256659e6bf14559"
+    },
+    {
+      "path": "src/surface.ts",
+      "sha256": "7c40505853c6dfae5cea633c0526ed2ec7b46cdf01c78013360ee9dbe9ebf3da"
+    },
+    {
+      "path": "src/types.ts",
+      "sha256": "e9dfc1d7bc4b146f954520a9ca2eff8539f3b9c082b5ecfac7ddb9c747501e45"
+    }
+  ]
+}
