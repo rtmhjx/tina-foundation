@@ -1,0 +1,133 @@
+{
+  "displayName": "Tina (Windows)",
+  "timezone": "Asia/Shanghai",
+  "activeProvider": "deepseek",
+  "web": {
+    "host": "127.0.0.1",
+    "port": 7789
+  },
+  "paths": {
+    "memory": "workspace",
+    "data": "data"
+  },
+  "context": {
+    "maxTokens": 300000,
+    "keepRatio": 0.15,
+    "softRatio": 0.85,
+    "firstTurn": false
+  },
+  "loop": {
+    "softCap": 44,
+    "hardCap": 52
+  },
+  "dream": {
+    "maxRounds": 8
+  },
+  "fusion": {
+    "identityPrompt": ""
+  },
+  "selfMem": {
+    "agentId": "tina-main",
+    "dataDir": "C:/Tina/state/self-mem",
+    "authorityDir": "C:/Tina/state/self-mem/authority",
+    "deviceDir": "C:/Tina/state/self-mem/device",
+    "seedFile": "C:/Tina/state/prompts/SEED.md",
+    "captureReasoning": true,
+    "rounds": {
+      "soft": 44,
+      "hard": 52
+    },
+    "memoryGuidance": {
+      "mode": "minimal"
+    },
+    "memoryIngress": {
+      "enabled": true,
+      "host": "127.0.0.1",
+      "port": 8895,
+      "instance": "tina-main",
+      "ownerId": "local-owner"
+    }
+  },
+  "worlds": {
+    "console": {
+      "enabled": true
+    },
+    "websearch": {
+      "enabled": true,
+      "provider": "deepseek",
+      "timeoutMs": 30000
+    },
+    "mobile": {
+      "enabled": false,
+      "host": "127.0.0.1",
+      "port": 7799,
+      "tokenSecret": "TINA_MOBILE_TOKEN"
+    },
+    "tinalink": {
+      "enabled": false,
+      "lane": "main",
+      "port": 7801,
+      "batchSize": 6,
+      "tokenSecret": "CORTICO_TINALINK_TOKEN",
+      "peers": {}
+    },
+    "stt": {
+      "enabled": false,
+      "protocol": "openai",
+      "baseUrl": "http://127.0.0.1:8010",
+      "model": "large-v3",
+      "languageHints": "zh",
+      "delivery": "wait",
+      "eventDelivery": "model"
+    },
+    "tts": {
+      "enabled": false,
+      "protocol": "openai",
+      "baseUrl": "http://127.0.0.1:8042",
+      "model": "local-tts",
+      "voice": "default",
+      "format": "wav",
+      "sampleRate": 16000
+    },
+    "audio-play": {
+      "enabled": false,
+      "backend": "auto",
+      "volume": 80
+    },
+    "canbot": {
+      "enabled": false,
+      "apiBaseUrl": "http://127.0.0.1:7331",
+      "pollIntervalMs": 5000,
+      "requestTimeoutMs": 5000,
+      "headEnabled": false,
+      "headDeviceId": "canbot-head",
+      "avatarBaseUrl": "http://127.0.0.1:8767",
+      "mediaBaseUrl": "http://127.0.0.1:8766",
+      "headUplinkBind": "0.0.0.0",
+      "headUplinkPort": 7333,
+      "timelineEnabled": false
+    },
+    "codexbridge": {
+      "enabled": false,
+      "host": "127.0.0.1",
+      "hostKeyAlias": "",
+      "user": "YOUR_WINDOWS_USER",
+      "identityFile": "C:/Users/YOUR_WINDOWS_USER/.ssh/id_ed25519",
+      "knownHostsFile": "C:/Users/YOUR_WINDOWS_USER/.ssh/known_hosts",
+      "remoteCommand": "node C:/Users/YOUR_WINDOWS_USER/AppData/Local/TinaCodexBridge/windows/client.mjs",
+      "allowedRoles": ["main"],
+      "pollMs": 5000
+    },
+    "linux-tools": {
+      "enabled": false
+    },
+    "workagent": {
+      "enabled": false,
+      "endpoint": "http://127.0.0.1:3095",
+      "tokenSecret": "CORTICO_WORK_BRIDGE_TOKEN",
+      "pollMs": 2000,
+      "deliveryMode": "batched",
+      "batchSize": 6
+    }
+  }
+}

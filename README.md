@@ -8,6 +8,8 @@
 
 > 展示页：<https://rtmhjx.github.io/tina-foundation/> · 仓库：<https://github.com/rtmhjx/tina-foundation>
 
+> **Windows 预览分支。** 当前分支（`windows`）提供 Windows 10/11 的 PowerShell 安装、启动与计划任务脚本；Linux 主线仍是 `main`。Windows 路径尚未完成端到端验收，请先读 [`docs/WINDOWS.md`](docs/WINDOWS.md)。
+
 ```
 Cordis / DSH 原生循环  ─┐
 Cortico Bot / World    ─┼─►  Tina Fusion Host  ─►  Web / Mobile / TTS / 硬件世界
@@ -37,7 +39,7 @@ Cortico Bot / World    ─┼─►  Tina Fusion Host  ─►  Web / Mobile / TT
 
 ## 快速开始
 
-> 这是一套**真实部署**，不是一条命令就能跑的 npm 包。第一次搭建请按 [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) 逐步来。
+> 这是一套**真实部署**，不是一条命令就能跑的 npm 包。第一次搭建请按 [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) 逐步来。Windows 10/11 请看 [`docs/WINDOWS.md`](docs/WINDOWS.md)。
 
 环境要求：
 
