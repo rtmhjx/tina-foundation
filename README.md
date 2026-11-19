@@ -6,6 +6,8 @@
 
 这个仓库是 Tina 在 2026-11 的**运行底座公开版**：融合宿主、记忆引擎、世界扩展与部署文档。原始记忆内容、人格提示词与凭据不在仓库内。
 
+> 展示页：<https://rtmhjx.github.io/tina-foundation/> · 仓库：<https://github.com/rtmhjx/tina-foundation>
+
 ```
 Cordis / DSH 原生循环  ─┐
 Cortico Bot / World    ─┼─►  Tina Fusion Host  ─►  Web / Mobile / TTS / 硬件世界
