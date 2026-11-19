@@ -37,7 +37,7 @@ pnpm install --frozen-lockfile
 pnpm run build:web
 cd ../..
 
-# 原生 DSH 运行时（TS → JS，生成 runtime/dsh-0.1.5-rc.2）
+# 原生 DSH 覆盖层（要求 runtime/dsh-0.1.5-rc.2 已存在）
 node scripts/build-fusion-native.mjs
 ```
 
@@ -46,6 +46,25 @@ node scripts/build-fusion-native.mjs
 ```bash
 test -d runtime/dsh-0.1.5-rc.2
 test -f upstream/cortico/dist/web/index.html
+```
+
+### 2.1 DSH 运行时闭包（必需）
+
+公开仓库**不包含** `runtime/dsh-0.1.5-rc.2`。它是 DSH 的完整运行时闭包（约 355 MB），`build-fusion-native.mjs` 只在这个闭包上叠加融合层的原生覆盖，不会从零生成它。
+
+没有这个目录时，`build-fusion-native.mjs` 会在 `realpath(runtime)` 处失败，`npm start` 也无法启动。两种取得方式：
+
+1. 从发布包/备份中取回完整的 `runtime/dsh-0.1.5-rc.2`，放到仓库根目录；
+2. 从 DSH 源码构建：
+
+```bash
+node scripts/stage-dsh-runtime.mjs /path/to/deepseek-harness ./runtime/dsh-0.1.5-rc.2
+```
+
+如果闭包是从别处移动来的，先修复内部链接：
+
+```bash
+node scripts/stage-dsh-runtime.mjs --relocate ./runtime/dsh-0.1.5-rc.2
 ```
 
 如果 `build:web` 失败，先确认 `pnpm` 版本与 Node 版本；上游锁文件对二者都敏感。

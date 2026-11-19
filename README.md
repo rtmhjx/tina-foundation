@@ -61,7 +61,7 @@ pnpm install --frozen-lockfile
 pnpm run build:web
 cd ../..
 
-# 3. 构建原生 DSH 运行时
+# 3. 构建原生覆盖层（需先准备 runtime/dsh-0.1.5-rc.2）
 node scripts/build-fusion-native.mjs
 
 # 4. 初始化状态目录与记忆 Bot
@@ -75,6 +75,8 @@ cp config/env.example "$CORTICO_FUSION_STATE/deployment/.env"
 # 6. 启动
 npm start
 ```
+
+> `runtime/dsh-0.1.5-rc.2` 不在仓库内，需要先从发布包或 DSH 源码取得；详见 [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) 的 2.1 节。
 
 默认只监听回环地址：Web 控制台 `127.0.0.1:7789`，Self-Mem HTTP `127.0.0.1:8895`。状态目录的结构见 [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)。
 
