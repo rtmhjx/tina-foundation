@@ -38,7 +38,7 @@
 
 ## 2. 宿主必须满足什么
 
-插件 `inject` 了 15 个服务：
+插件 `inject` 了 14 个服务：
 
 ```text
 agentLoop  agents  sessions  sessionController  tools  llm  loader
