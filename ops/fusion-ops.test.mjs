@@ -1,4 +1,4 @@
-﻿import assert from 'node:assert/strict';
+import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { mkdir, mkdtemp, readFile, writeFile, appendFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';

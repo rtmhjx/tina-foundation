@@ -1,4 +1,4 @@
-﻿{
+{
     "name":  "@tina/self-mem",
     "version":  "0.4.6-fusion.next.1",
     "description":  "Tina continuous self-panorama (freeform TINA_SELF.md + cross-window lifecycle pulse) over SharedGitMem immutable originals.",
